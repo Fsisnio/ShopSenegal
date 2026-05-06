@@ -335,6 +335,7 @@ button:hover {
 .summary-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 640px;
 }
 
 .summary-table th,
@@ -599,5 +600,137 @@ button:hover {
   .upload-layout {
     grid-template-columns: 260px 1fr;
     align-items: start;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    width: min(1120px, 94%);
+  }
+
+  .hero--premium {
+    padding: 2.4rem 0;
+  }
+
+  .hero h1 {
+    max-width: 24ch;
+  }
+
+  .top-nav__links {
+    gap: 0.65rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-nav__content {
+    min-height: 70px;
+    padding: 0.45rem 0;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .brand-logo {
+    width: 74px;
+    height: 46px;
+  }
+
+  .top-nav__links {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 0.7rem;
+  }
+
+  .hero--premium {
+    padding: 2rem 0 1.8rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.45rem, 8vw, 2rem);
+    max-width: 100%;
+  }
+
+  .hero-cta,
+  .order-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .btn-link {
+    width: 100%;
+  }
+
+  .inline-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 0.85rem;
+    border-radius: 14px;
+  }
+
+  .quick-status-actions {
+    margin-bottom: 0.45rem;
+  }
+
+  .quick-status-actions .table-btn {
+    flex: 1;
+    margin-right: 0;
+    text-align: center;
+  }
+
+  .summary-table th,
+  .summary-table td {
+    padding: 0.5rem 0.35rem;
+    font-size: 0.88rem;
+  }
+
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .fraud-alert {
+    font-size: 0.85rem;
+  }
+
+  .brand-link span {
+    font-size: 1rem;
+  }
+
+  .brand-logo {
+    width: 64px;
+    height: 40px;
+  }
+
+  .top-nav__links a {
+    font-size: 0.92rem;
+  }
+
+  .summary-metrics {
+    gap: 0.45rem;
+  }
+
+  .summary-metrics span {
+    font-size: 0.82rem;
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
   }
 }
