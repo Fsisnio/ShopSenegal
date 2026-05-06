@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: shopsenegal
+    env: docker
+    plan: free
+    autoDeploy: true
