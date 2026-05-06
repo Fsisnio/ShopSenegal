@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopSenegal - Commande intelligente</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="fraud-alert">
+      <div class="fraud-alert__track">
+        <span>Anti fraude: Ceci est le seul numero de commande: +221773542551</span>
+      </div>
+    </div>
+
+    <nav class="top-nav">
+      <div class="container top-nav__content">
+        <a class="brand-link" href="index.html">
+          <img class="brand-logo" src="assets/shopsenegal-logo.png" alt="Logo ShopSenegal" />
+          <span>ShopSenegal</span>
+        </a>
+        <div class="top-nav__links">
+          <a href="index.html">Accueil</a>
+          <a href="livreurs.html">Livreurs</a>
+          <a href="lieux.html">Lieux d'emplette</a>
+          <a href="register.html">Inscription</a>
+          <a href="admin.html">Admin</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero hero--premium">
+      <div class="hero__content container">
+        <h1>On fait les courses comme vous et pour vous.</h1>
+        <p>
+          Dictez ou ecrivez votre liste, validez, puis passez commande en quelques
+          clics avec suivi professionnel.
+        </p>
+        <div class="hero-cta">
+          <a class="btn-link" href="#commande">Commander maintenant</a>
+          <a class="btn-link btn-link--ghost" href="register.html">Creer un compte</a>
+          <a class="btn-link btn-link--ghost" href="lieux.html">Voir les lieux couverts</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="container trust-strip">
+      <div class="trust-item">
+        <strong>+1000</strong>
+        <span>commandes traitees</span>
+      </div>
+      <div class="trust-item">
+        <strong>45 min</strong>
+        <span>delai moyen en zone proche</span>
+      </div>
+      <div class="trust-item">
+        <strong>7j/7</strong>
+        <span>support WhatsApp et telephone</span>
+      </div>
+    </section>
+
+    <section class="container how-it-works">
+      <h2>Comment ca marche</h2>
+      <div class="steps">
+        <article class="step-card">
+          <h3>1. Creez votre liste</h3>
+          <p>Saisissez vos produits, ou utilisez la voix et l'OCR photo.</p>
+        </article>
+        <article class="step-card">
+          <h3>2. Verifiez votre commande</h3>
+          <p>Modifiez les lignes, choisissez le paiement et le creneau.</p>
+        </article>
+        <article class="step-card">
+          <h3>3. Recevez votre livraison</h3>
+          <p>Confirmation instantanee WhatsApp, puis livraison rapide.</p>
+        </article>
+      </div>
+    </section>
+
+    <main class="container stack-lg">
+      <section class="card">
+        <h2>Liste de besoins</h2>
+        <p>Pour chaque produit: nom, quantite, unite et marque (optionnelle).</p>
+
+        <form id="need-form" class="stack">
+          <div class="inline-fields">
+            <div class="field">
+              <label for="need-name">Nom du produit</label>
+              <input id="need-name" type="text" placeholder="Ex: riz" required />
+            </div>
+            <div class="field">
+              <label for="need-quantity">Quantite</label>
+              <input
+                id="need-quantity"
+                type="number"
+                min="1"
+                step="1"
+                value="1"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="need-unit">Unite</label>
+              <select id="need-unit">
+                <option value="piece">piece</option>
+                <option value="kg">kg</option>
+                <option value="litre">litre</option>
+                <option value="paquet">paquet</option>
+                <option value="boite">boite</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="need-brand">Marque (optionnel)</label>
+              <input
+                id="need-brand"
+                type="text"
+                placeholder="Ex: Royal Umbrella"
+              />
+            </div>
+            <div class="field">
+              <label for="need-amount">Montant (optionnel)</label>
+              <input
+                id="need-amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex: 2500"
+              />
+            </div>
+          </div>
+          <button type="submit">Ajouter le produit</button>
+        </form>
+
+        <div class="voice-box">
+          <div class="voice-actions">
+            <button id="voice-button" type="button">Dicter une commande</button>
+            <button id="voice-apply-button" type="button">Valider la transcription</button>
+          </div>
+          <label for="voice-transcript">Transcription vocale (modifiable)</label>
+          <textarea
+            id="voice-transcript"
+            rows="4"
+            placeholder="Exemple: tomates, 3, boite, roma"
+          ></textarea>
+          <p id="voice-status" class="muted">Cliquez pour activer la reconnaissance vocale.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Resume de commande</h2>
+        <p>Relisez, modifiez ou supprimez chaque produit avant envoi.</p>
+        <div class="summary-metrics">
+          <span id="summary-lines">0 ligne</span>
+          <span id="summary-qty">0 article</span>
+        </div>
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Quantite</th>
+                <th>Unite</th>
+                <th>Marque</th>
+                <th>Montant (FCFA)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="needs-list"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card hidden">
+        <h2>Upload de photo + OCR</h2>
+        <p>Importez la liste ecrite sur papier puis extraire le texte automatiquement.</p>
+        <div class="upload-layout">
+          <div class="stack">
+            <label class="upload">
+              <input id="photo-input" type="file" accept="image/*" multiple />
+              <span>Choisir des photos</span>
+            </label>
+            <button id="ocr-button" type="button">Lire le texte de la photo</button>
+            <p id="ocr-status" class="muted">OCR pret.</p>
+          </div>
+          <div id="photo-preview" class="photo-preview"></div>
+        </div>
+      </section>
+
+      <section id="commande" class="card">
+        <h2>Envoyer la commande</h2>
+        <p>Confirmez vos informations, le creneau de livraison et le paiement.</p>
+
+        <form id="order-form" class="stack">
+          <div class="inline-fields">
+            <div class="field">
+              <label for="customer-name">Nom complet</label>
+              <input
+                id="customer-name"
+                type="text"
+                placeholder="Ex: Abdoulaye Ndiaye"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="customer-phone">Telephone</label>
+              <input
+                id="customer-phone"
+                type="text"
+                placeholder="Ex: +221 77 000 00 00"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="customer-address">Adresse de livraison</label>
+              <input
+                id="customer-address"
+                type="text"
+                placeholder="Ex: Parcelles Assainies Unite 15"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="delivery-slot">Creneau de livraison</label>
+              <select id="delivery-slot">
+                <option value="maintenant">Le plus tot possible</option>
+                <option value="matin">Ce matin</option>
+                <option value="apres-midi">Cet apres-midi</option>
+                <option value="soir">Ce soir</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="payment-method">Mode de paiement</label>
+              <select id="payment-method">
+                <option value="a_la_livraison">Paiement a la livraison</option>
+                <option value="wave">Wave</option>
+                <option value="orange_money">Orange Money</option>
+                <option value="free_money">Free Money</option>
+              </select>
+            </div>
+          </div>
+          <label for="customer-note">Note complementaire (optionnel)</label>
+          <textarea
+            id="customer-note"
+            rows="2"
+            placeholder="Ex: Remplacer un produit si indisponible"
+          ></textarea>
+          <button id="send-order-button" type="submit">Envoyer ma commande</button>
+        </form>
+
+        <p id="order-status" class="muted">Votre commande sera envoyee apres validation.</p>
+        <div id="order-actions" class="order-actions hidden">
+          <a id="whatsapp-link" class="btn-link" target="_blank" rel="noreferrer">Confirmer via WhatsApp</a>
+          <a id="sms-link" class="btn-link btn-link--ghost" href="#">Confirmer via SMS</a>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Historique client</h2>
+        <p>Retrouvez vos anciennes commandes et recommandez en un clic.</p>
+        <div id="order-history" class="history-list"></div>
+      </section>
+    </main>
+
+    <footer class="footer footer--rich">
+      <div class="container footer-grid">
+        <div>
+          <strong>ShopSenegal</strong>
+          <p>On fait les courses comme vous et pour vous.</p>
+        </div>
+        <div>
+          <strong>Contact</strong>
+          <p>Telephone / WhatsApp: +221773542551</p>
+          <p>Disponibilite: 7j/7 - 8h a 22h</p>
+        </div>
+        <div>
+          <strong>Informations</strong>
+          <p>Politique de confidentialite</p>
+          <p>Conditions generales d'utilisation</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app-data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

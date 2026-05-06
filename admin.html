@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopSenegal - Admin</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="fraud-alert">
+      <div class="fraud-alert__track">
+        <span>Anti fraude: Ceci est le seul numero de commande: +221773542551</span>
+      </div>
+    </div>
+
+    <nav class="top-nav">
+      <div class="container top-nav__content">
+        <a class="brand-link" href="index.html">
+          <img class="brand-logo" src="assets/shopsenegal-logo.png" alt="Logo ShopSenegal" />
+          <span>ShopSenegal</span>
+        </a>
+        <div class="top-nav__links">
+          <a href="index.html">Accueil</a>
+          <a href="livreurs.html">Livreurs</a>
+          <a href="lieux.html">Lieux d'emplette</a>
+          <a href="register.html">Inscription</a>
+          <a href="admin.html">Admin</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero hero--premium">
+      <div class="hero__content container">
+        <h1>Back-office ShopSenegal</h1>
+        <p>Suivi commandes, assignation et gestion des livreurs / lieux.</p>
+      </div>
+    </header>
+
+    <main class="container admin-grid">
+      <section class="card">
+        <h2>Pilotage global</h2>
+        <p>Vue d'ensemble des performances et segmentation des commandes.</p>
+        <div id="admin-kpis" class="kpi-grid"></div>
+        <div class="charts-grid">
+          <article class="card chart-card">
+            <h3>Segmentation par statut</h3>
+            <canvas id="status-chart" height="170"></canvas>
+          </article>
+          <article class="card chart-card">
+            <h3>Segmentation par paiement</h3>
+            <canvas id="payment-chart" height="170"></canvas>
+          </article>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Segmentation et filtres</h2>
+        <div class="inline-fields">
+          <div class="field">
+            <label for="filter-status">Filtrer par statut</label>
+            <select id="filter-status">
+              <option value="all">Tous</option>
+              <option value="Nouvelle">Nouvelle</option>
+              <option value="En cours">En cours</option>
+              <option value="Livree">Livree</option>
+              <option value="Retournee">Retournee</option>
+              <option value="Perdue">Perdue</option>
+              <option value="Payee">Payee</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="filter-payment">Filtrer par paiement</label>
+            <select id="filter-payment">
+              <option value="all">Tous</option>
+              <option value="a_la_livraison">A la livraison</option>
+              <option value="wave">Wave</option>
+              <option value="orange_money">Orange Money</option>
+              <option value="free_money">Free Money</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="filter-search">Recherche client / telephone</label>
+            <input id="filter-search" type="text" placeholder="Ex: Ndiaye ou 77..." />
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Commandes recues</h2>
+        <p>Mettez a jour le statut et assignez un livreur.</p>
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Telephone</th>
+                <th>Produits</th>
+                <th>Statut</th>
+                <th>Paiement statut</th>
+                <th>Livreur</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Details de commande</h2>
+        <p>Cliquez sur une commande du tableau pour afficher ses details.</p>
+        <div id="order-details-root" class="detail-sheet muted">
+          Aucune commande selectionnee.
+        </div>
+        <button id="download-order-png" type="button" disabled>
+          Telecharger la commande en PNG
+        </button>
+      </section>
+
+      <section class="card">
+        <h2>Ajouter un livreur</h2>
+        <form id="driver-form" class="stack">
+          <input id="driver-firstname" type="text" placeholder="Prenom" required />
+          <input id="driver-lastname" type="text" placeholder="Nom" required />
+          <input id="driver-zone" type="text" placeholder="Zone couverte" required />
+          <input id="driver-photo" type="text" placeholder="URL photo" required />
+          <div class="quick-status-actions">
+            <button id="driver-submit-button" type="submit">Ajouter livreur</button>
+            <button id="driver-cancel-edit" type="button" class="table-btn table-btn--neutral hidden">
+              Annuler
+            </button>
+          </div>
+        </form>
+        <div id="admin-drivers" class="history-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>Ajouter un lieu d'emplette</h2>
+        <form id="place-form" class="stack">
+          <input id="place-name" type="text" placeholder="Nom du lieu" required />
+          <input id="place-area" type="text" placeholder="Zone" required />
+          <div class="quick-status-actions">
+            <button id="place-submit-button" type="submit">Ajouter lieu</button>
+            <button id="place-cancel-edit" type="button" class="table-btn table-btn--neutral hidden">
+              Annuler
+            </button>
+          </div>
+        </form>
+        <div id="admin-places" class="history-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>Utilisateurs inscrits</h2>
+        <p>Clients ayant cree un compte.</p>
+        <div id="admin-users" class="history-list"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <small>ShopSenegal - Interface admin locale</small>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

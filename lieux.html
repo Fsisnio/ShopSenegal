@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopSenegal - Lieux d'emplette</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="fraud-alert">
+      <div class="fraud-alert__track">
+        <span>Anti fraude: Ceci est le seul numero de commande: +221773542551</span>
+      </div>
+    </div>
+
+    <nav class="top-nav">
+      <div class="container top-nav__content">
+        <a class="brand-link" href="index.html">
+          <img class="brand-logo" src="assets/shopsenegal-logo.png" alt="Logo ShopSenegal" />
+          <span>ShopSenegal</span>
+        </a>
+        <div class="top-nav__links">
+          <a href="index.html">Accueil</a>
+          <a href="livreurs.html">Livreurs</a>
+          <a href="lieux.html">Lieux d'emplette</a>
+          <a href="register.html">Inscription</a>
+          <a href="admin.html">Admin</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero hero--premium">
+      <div class="hero__content container">
+        <h1>Lieux d'emplette</h1>
+        <p>
+          Liste complete des marches, supermarches et zones d'achat couvertes par
+          ShopSenegal.
+        </p>
+      </div>
+    </header>
+
+    <main id="places-root" class="container place-list"></main>
+
+    <footer class="footer">
+      <div class="container">
+        <small>ShopSenegal - Service d'aide aux emplettes au Sénégal</small>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app-data.js"></script>
+    <script src="lieux.js"></script>
+  </body>
+</html>

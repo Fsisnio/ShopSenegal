@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopSenegal - Inscription</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="fraud-alert">
+      <div class="fraud-alert__track">
+        <span>Anti fraude: Ceci est le seul numero de commande: +221773542551</span>
+      </div>
+    </div>
+
+    <nav class="top-nav">
+      <div class="container top-nav__content">
+        <a class="brand-link" href="index.html">
+          <img class="brand-logo" src="assets/shopsenegal-logo.png" alt="Logo ShopSenegal" />
+          <span>ShopSenegal</span>
+        </a>
+        <div class="top-nav__links">
+          <a href="index.html">Accueil</a>
+          <a href="livreurs.html">Livreurs</a>
+          <a href="lieux.html">Lieux d'emplette</a>
+          <a href="register.html">Inscription</a>
+          <a href="admin.html">Admin</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero hero--premium">
+      <div class="hero__content container">
+        <h1>Inscription utilisateur</h1>
+        <p>Creez votre compte pour suivre vos commandes et recommander rapidement.</p>
+      </div>
+    </header>
+
+    <main class="container stack-lg">
+      <section class="card auth-card">
+        <h2>Creer un compte</h2>
+        <form id="register-form" class="stack">
+          <label for="full-name">Nom complet</label>
+          <input id="full-name" type="text" placeholder="Ex: Fatou Ndiaye" required />
+
+          <label for="phone">Telephone</label>
+          <input id="phone" type="text" placeholder="Ex: +221 77 000 00 00" required />
+
+          <label for="email">Email (optionnel)</label>
+          <input id="email" type="text" placeholder="Ex: client@email.com" />
+
+          <label for="address">Adresse</label>
+          <input id="address" type="text" placeholder="Ex: Ouakam Cite Avion" required />
+
+          <label for="password">Mot de passe</label>
+          <input id="password" type="password" minlength="6" required />
+
+          <label for="confirm-password">Confirmer le mot de passe</label>
+          <input id="confirm-password" type="password" minlength="6" required />
+
+          <button type="submit">S'inscrire</button>
+        </form>
+        <p id="register-status" class="muted">Remplissez le formulaire pour creer votre compte.</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <small>ShopSenegal - Espace inscription client</small>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app-data.js"></script>
+    <script src="register.js"></script>
+  </body>
+</html>
