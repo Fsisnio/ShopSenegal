@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShopSenegal - Commande intelligente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -13,31 +19,50 @@
       </div>
     </div>
 
-    <nav class="top-nav">
-      <div class="container top-nav__content">
+    <nav class="top-nav" aria-label="Navigation principale">
+      <div class="container top-nav__shell">
         <a class="brand-link" href="index.html">
-          <img class="brand-logo" src="assets/shopsenegal-logo.png" alt="Logo ShopSenegal" />
+          <img
+            class="brand-logo"
+            src="assets/shopsenegal-logo.png"
+            alt=""
+            width="90"
+            height="56"
+          />
           <span>ShopSenegal</span>
         </a>
-        <div class="top-nav__links">
-          <a href="index.html">Accueil</a>
-          <a href="livreurs.html">Livreurs</a>
-          <a href="lieux.html">Lieux d'emplette</a>
-          <a href="register.html">Inscription</a>
+        <button
+          type="button"
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-controls="primary-nav"
+        >
+          <span class="nav-toggle__icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Menu</span>
+        </button>
+        <div id="primary-nav" class="top-nav__drawer" role="navigation">
+          <div class="top-nav__links">
+            <a href="index.html">Accueil</a>
+            <a href="livreurs.html">Livreurs</a>
+            <a href="lieux.html">Lieux d'emplette</a>
+            <a href="register.html">Inscription</a>
+          </div>
         </div>
       </div>
     </nav>
+    <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 
     <header class="hero hero--premium">
       <div class="hero__content container">
+        <p class="hero__eyebrow">Courses & livraison au Sénégal</p>
         <h1>On fait les courses comme vous et pour vous.</h1>
-        <p>
-          Dictez ou ecrivez votre liste, validez, puis passez commande en quelques
-          clics avec suivi professionnel.
+        <p class="hero__lead">
+          Dictée ou liste écrite, validation en un clic, commande et suivi pro comme en
+          magasin.
         </p>
         <div class="hero-cta">
           <a class="btn-link" href="#commande">Commander maintenant</a>
-          <a class="btn-link btn-link--ghost" href="register.html">Creer un compte</a>
+          <a class="btn-link btn-link--ghost" href="register.html">Créer un compte</a>
           <a class="btn-link btn-link--ghost" href="lieux.html">Voir les lieux couverts</a>
         </div>
       </div>
@@ -45,33 +70,74 @@
 
     <section class="container trust-strip">
       <div class="trust-item">
-        <strong>+1000</strong>
-        <span>commandes traitees</span>
+        <div class="trust-item__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="trust-item__copy">
+          <strong>+1000</strong>
+          <span>commandes traitées</span>
+        </div>
       </div>
       <div class="trust-item">
-        <strong>45 min</strong>
-        <span>delai moyen en zone proche</span>
+        <div class="trust-item__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="trust-item__copy">
+          <strong>45 min</strong>
+          <span>délai moyen en zone proche</span>
+        </div>
       </div>
       <div class="trust-item">
-        <strong>7j/7</strong>
-        <span>support WhatsApp et telephone</span>
+        <div class="trust-item__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path
+              d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.44 12.44 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.44 12.44 0 002.81.7A2 2 0 0122 16.92z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="trust-item__copy">
+          <strong>7j/7</strong>
+          <span>support WhatsApp et téléphone</span>
+        </div>
       </div>
     </section>
 
     <section class="container how-it-works">
-      <h2>Comment ca marche</h2>
+      <h2>Comment ça marche</h2>
+      <p class="section-lead">Trois étapes pour être livré sans stress.</p>
       <div class="steps">
         <article class="step-card">
-          <h3>1. Creez votre liste</h3>
-          <p>Saisissez vos produits, ou utilisez la voix et l'OCR photo.</p>
+          <span class="step-card__num" aria-hidden="true">1</span>
+          <div class="step-card__inner">
+            <h3>Créez votre liste</h3>
+            <p>Saisissez vos produits, ou utilisez la voix et l'OCR photo.</p>
+          </div>
         </article>
         <article class="step-card">
-          <h3>2. Verifiez votre commande</h3>
-          <p>Modifiez les lignes, choisissez le paiement et le creneau.</p>
+          <span class="step-card__num" aria-hidden="true">2</span>
+          <div class="step-card__inner">
+            <h3>Vérifiez votre commande</h3>
+            <p>Modifiez les lignes, choisissez le paiement et le créneau.</p>
+          </div>
         </article>
         <article class="step-card">
-          <h3>3. Recevez votre livraison</h3>
-          <p>Confirmation instantanee WhatsApp, puis livraison rapide.</p>
+          <span class="step-card__num" aria-hidden="true">3</span>
+          <div class="step-card__inner">
+            <h3>Recevez votre livraison</h3>
+            <p>Confirmation instantanée WhatsApp, puis livraison rapide.</p>
+          </div>
         </article>
       </div>
     </section>
@@ -279,6 +345,7 @@
       </div>
     </footer>
 
+    <script src="nav.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>

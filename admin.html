@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShopSenegal - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -13,21 +19,39 @@
       </div>
     </div>
 
-    <nav class="top-nav">
-      <div class="container top-nav__content">
+    <nav class="top-nav" aria-label="Navigation principale">
+      <div class="container top-nav__shell">
         <a class="brand-link" href="index.html">
-          <img class="brand-logo" src="assets/shopsenegal-logo.png" alt="Logo ShopSenegal" />
+          <img
+            class="brand-logo"
+            src="assets/shopsenegal-logo.png"
+            alt=""
+            width="90"
+            height="56"
+          />
           <span>ShopSenegal</span>
         </a>
-        <div class="top-nav__links">
-          <a href="index.html">Accueil</a>
-          <a href="livreurs.html">Livreurs</a>
-          <a href="lieux.html">Lieux d'emplette</a>
-          <a href="register.html">Inscription</a>
-          <a href="admin.html">Admin</a>
+        <button
+          type="button"
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-controls="primary-nav"
+        >
+          <span class="nav-toggle__icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Menu</span>
+        </button>
+        <div id="primary-nav" class="top-nav__drawer" role="navigation">
+          <div class="top-nav__links">
+            <a href="index.html">Accueil</a>
+            <a href="livreurs.html">Livreurs</a>
+            <a href="lieux.html">Lieux d'emplette</a>
+            <a href="register.html">Inscription</a>
+            <a href="admin.html">Admin</a>
+          </div>
         </div>
       </div>
     </nav>
+    <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 
     <header class="hero hero--premium">
       <div class="hero__content container">
@@ -162,6 +186,7 @@
       </div>
     </footer>
 
+    <script src="nav.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="app-data.js"></script>
