@@ -528,11 +528,13 @@ if (orderForm) {
       });
 
       if (payMethod === "paydunya") {
-        if (persisted !== "supabase") {
+        if (persisted.source !== "supabase") {
           orderStatus.textContent =
-            persisted === "failed"
-              ? "Commande refusee par Supabase (executez les migrations PAYDUNYA.md / colonnes orders)."
-              : "Paydunya requiert une base Supabase disponible.";
+            persisted.source === "failed"
+              ? `Commande refusee par Supabase : ${persisted.error || "voir la console (F12)."}.`
+              : persisted.source === "local_fallback"
+                ? `Commande refusee par Supabase : ${persisted.error || "voir la console."}.`
+                : "Pay en ligne impossible : projet Supabase non configure (SUPABASE_URL + SUPABASE_ANON_KEY sur le serveur).";
           orderActions.classList.add("hidden");
           return;
         }
@@ -581,7 +583,15 @@ if (orderForm) {
       smsLink.href = `sms:+221773542551?body=${encoded}`;
       orderActions.classList.remove("hidden");
 
-      orderStatus.textContent = `Commande enregistree pour ${orderPayload.client}.`;
+      if (persisted.source === "supabase") {
+        orderStatus.textContent = `Commande enregistree pour ${orderPayload.client} (visible dans l admin / Supabase).`;
+      } else if (persisted.source === "local_fallback") {
+        orderStatus.textContent = `Attention : commande uniquement sur cet appareil. La base refuse l enregistrement : ${persisted.error || ""} Utilisez WhatsApp ci-dessous pour transmettre la commande.`;
+      } else {
+        orderStatus.textContent =
+          `Commande enregistree sur cet appareil uniquement : configurez SUPABASE_URL et SUPABASE_ANON_KEY sur votre hebergeur (Render), redeployez, puis rechargez la page pour synchroniser avec la base.`;
+      }
+
       await renderHistory();
       resetFormAfterOrder();
     } finally {

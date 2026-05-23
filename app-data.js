@@ -171,6 +171,14 @@ const ShopData = (() => {
     };
   }
 
+  function formatSupabasePersistError(error) {
+    if (!error) return "";
+    const parts = [error.message, error.details, error.hint].filter(
+      (p) => typeof p === "string" && p.trim().length > 0
+    );
+    return parts.join(" — ").trim();
+  }
+
   function fromOrderDb(row) {
     return {
       id: row.id,
@@ -236,19 +244,39 @@ const ShopData = (() => {
     return read(storageKeys.orders, []);
   }
 
+  /**
+   * Persiste une commande. Retour objet :
+   * - { ok: true, source: "supabase" } — ligne dans public.orders (visible admin / SQL).
+   * - { ok: true, source: "local" } — pas de client Supabase : uniquement navigateur (localStorage).
+   * - { ok: true, source: "local_fallback", error } — Supabase a refusé l’INSERT ; sauvegarde locale de secours.
+   * - { ok: false, source: "failed", error } — mode exclusif DB (Paydunya) et refus INSERT.
+   */
   async function saveOrder(order, options = {}) {
     const supabaseExclusive = options.supabaseExclusive === true;
     const client = getSupabaseClient();
+
+    function persistLocally() {
+      const orders = read(storageKeys.orders, []);
+      orders.unshift(order);
+      write(storageKeys.orders, orders);
+    }
+
     if (client) {
       const { error } = await client.from("orders").insert(toOrderDb(order));
-      if (!error) return "supabase";
-      console.warn("ShopData.saveOrder Supabase:", error.message);
-      if (supabaseExclusive) return "failed";
+      if (!error) {
+        return { ok: true, source: "supabase" };
+      }
+      const errText = formatSupabasePersistError(error) || "Insertion refusée.";
+      console.warn("ShopData.saveOrder Supabase:", error);
+      if (supabaseExclusive) {
+        return { ok: false, source: "failed", error: errText };
+      }
+      persistLocally();
+      return { ok: true, source: "local_fallback", error: errText };
     }
-    const orders = read(storageKeys.orders, []);
-    orders.unshift(order);
-    write(storageKeys.orders, orders);
-    return "local";
+
+    persistLocally();
+    return { ok: true, source: "local" };
   }
 
   async function getUsers() {
