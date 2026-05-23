@@ -84,6 +84,11 @@ function paydunyaCanUseHostedCheckout() {
   );
 }
 
+function paydunyaCheckoutFnUrlConfigured() {
+  const fn = window.PAYDUNYA_CONFIG?.checkoutFnUrl;
+  return typeof fn === "string" && fn.trim().length > 0;
+}
+
 function syncPaydunyaPayTip() {
   if (!paydunyaPayTip) return;
   paydunyaPayTip.classList.toggle("hidden", getPaymentValue() !== "paydunya");
@@ -104,8 +109,25 @@ function updateOrderSubmitLabel() {
 function updatePaySubmitHint() {
   if (!paySubmitHint) return;
   if (getPaymentValue() === "paydunya") {
-    paySubmitHint.textContent =
-      "Une fois le formulaire rempli, redirection vers Paydunya pour payer (Wave, Orange Money, carte).";
+    const lines = [
+      "Une fois le formulaire rempli, redirection vers Paydunya pour payer (Wave, Orange Money, carte)."
+    ];
+    const miss = [];
+    if (!paydunyaCanUseHostedCheckout()) {
+      miss.push(
+        "Supabase (URL + cle anon non configure ; sur Render : SUPABASE_URL + SUPABASE_ANON_KEY)."
+      );
+    }
+    if (!paydunyaCheckoutFnUrlConfigured()) {
+      miss.push(
+        "URL de la fonction paydunya-checkout (Render : PAYDUNYA_CHECKOUT_FN_URL ou meta / localStorage)."
+      );
+    }
+    if (miss.length > 0) {
+      lines.push("Sans cela la redirection reste inactive :");
+      lines.push(miss.join(" "));
+    }
+    paySubmitHint.textContent = lines.join("\n\n");
     paySubmitHint.classList.remove("hidden");
   } else if (getPaymentValue() === "a_la_livraison") {
     paySubmitHint.textContent =
@@ -441,7 +463,7 @@ if (orderForm) {
     if (payMethod === "paydunya") {
       if (!paydunyaCanUseHostedCheckout()) {
         orderStatus.textContent =
-          "Paydunya requiert un projet Supabase configure (voir supabase-config.js) et PAYDUNYA.md.";
+          "Pay en ligne inactive : projet Supabase non configure dans le navigateur. Sur Render definissez SUPABASE_URL + SUPABASE_ANON_KEY ou remplissez supabase-config (voir DEPLOY_RENDER.md).";
         orderActions.classList.add("hidden");
         return;
       }
@@ -451,10 +473,9 @@ if (orderForm) {
         orderActions.classList.add("hidden");
         return;
       }
-      const payCfgEarly = window.PAYDUNYA_CONFIG || {};
-      if (!payCfgEarly.checkoutFnUrl?.trim?.()) {
+      if (!paydunyaCheckoutFnUrlConfigured()) {
         orderStatus.textContent =
-          "Configurez l'URL Paydunya (paydunya-config.js, méta shopsenegal-paydunya-checkout-url, ou cle localStorage shopsenegal.paydunya.checkoutFnUrl).";
+          "Definissez l URL de paydunya-checkout (Render : PAYDUNYA_CHECKOUT_FN_URL ou paydunya-config / meta / localStorage).";
         orderActions.classList.add("hidden");
         return;
       }

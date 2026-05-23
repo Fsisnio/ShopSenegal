@@ -1,4 +1,8 @@
+# Pay en ligne Paydunya : après déploiement, définir sur le service Web (dashboard Render) au minimum :
+# SUPABASE_URL, SUPABASE_ANON_KEY, PAYDUNYA_CHECKOUT_FN_URL — voir DEPLOY_RENDER.md.
+
 services:
+
   - type: web
     name: shopsenegal
     env: docker

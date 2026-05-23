@@ -1,27 +1,38 @@
 /**
- * Paiements Paydunya (Redirect Checkout).
+ * Paydunya (redirect checkout).
+ * Priorité des sources pour `checkoutFnUrl` :
+ * 1) variables Render Docker : PAYDUNYA_CHECKOUT_FN_URL (ou PAYDUNYA_CHECKOUT_URL)
+ * 2) meta shopsenegal-paydunya-checkout-url avant ce script
+ * 3) localStorage shopsenegal.paydunya.checkoutFnUrl
  *
- * Déployez les Edge Functions puis renseignez l’URL, par exemple :
- * https://VOTRE_REF.supabase.co/functions/v1/paydunya-checkout
- *
- * Possibilités (par ordre) :
- * 1) Méta-balise avant ce script dans index.html :
- *    <meta name="shopsenegal-paydunya-checkout-url" content="https://.../paydunya-checkout" />
- * 2) localStorage : shopsenegal.paydunya.checkoutFnUrl
- * 3) Mettre checkoutFnUrl codé dur plus bas pour la prod uniquement — ne pas committer de secrets réels ;
- *    PAYDUNYA_CHECKOUT_SECRET (Edge Function + checkoutSecret ci-dessous même valeur).
+ * Secret optionnel PAYDUNYA_CHECKOUT_SECRET côté conteneur (même secret que Edge Function si activé).
  */
 (function () {
-  const metaCheckout = document.querySelector(
-    'meta[name="shopsenegal-paydunya-checkout-url"]'
-  )?.content?.trim?.();
+  var rt =
+    typeof window.SHOPSENEGAL_RUNTIME === "object" &&
+    window.SHOPSENEGAL_RUNTIME !== null &&
+    !Array.isArray(window.SHOPSENEGAL_RUNTIME)
+      ? window.SHOPSENEGAL_RUNTIME
+      : {};
+
+  var metaCheckoutEl = document.querySelector('meta[name="shopsenegal-paydunya-checkout-url"]');
+  var metaCheckout =
+    typeof metaCheckoutEl?.content === "string" ? metaCheckoutEl.content.trim() : "";
+
+  var runtimeFn =
+    typeof rt.PAYDUNYA_CHECKOUT_FN_URL === "string" ? rt.PAYDUNYA_CHECKOUT_FN_URL.trim() : "";
+  var runtimeSecret =
+    typeof rt.PAYDUNYA_CHECKOUT_SECRET === "string" ? rt.PAYDUNYA_CHECKOUT_SECRET.trim() : "";
 
   window.PAYDUNYA_CONFIG = {
     checkoutFnUrl:
+      runtimeFn ||
       metaCheckout ||
       localStorage.getItem("shopsenegal.paydunya.checkoutFnUrl") ||
       "",
-
-    checkoutSecret: localStorage.getItem("shopsenegal.paydunya.checkoutSecret") || ""
+    checkoutSecret:
+      runtimeSecret ||
+      localStorage.getItem("shopsenegal.paydunya.checkoutSecret") ||
+      ""
   };
 })();

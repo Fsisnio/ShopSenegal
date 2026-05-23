@@ -962,6 +962,7 @@ button:focus-visible {
 .pay-submit-hint {
   margin: 0.5rem 0 0;
   font-size: 0.875rem;
+  white-space: pre-line;
 }
 
 .hidden {
