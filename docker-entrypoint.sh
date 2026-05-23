@@ -15,6 +15,9 @@ payload = {
         os.environ.get("PAYDUNYA_CHECKOUT_FN_URL") or os.environ.get("PAYDUNYA_CHECKOUT_URL") or ""
     ).strip(),
     "PAYDUNYA_CHECKOUT_SECRET": (os.environ.get("PAYDUNYA_CHECKOUT_SECRET") or "").strip(),
+    # Identifiants admin (gate client-side ; surcharge les valeurs par defaut dans admin.js).
+    "ADMIN_EMAIL": (os.environ.get("ADMIN_EMAIL") or "").strip(),
+    "ADMIN_PASSWORD_SHA256": (os.environ.get("ADMIN_PASSWORD_SHA256") or "").strip(),
 }
 
 with open("runtime-env.js", "w", encoding="utf-8") as f:

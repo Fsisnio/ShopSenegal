@@ -1079,6 +1079,165 @@ button:focus-visible {
 }
 
 /* ============================================================
+   Admin — overlay de connexion
+   ============================================================ */
+.admin-login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: radial-gradient(120% 80% at 50% -10%, #0f5132 0%, #06231b 70%, #020c08 100%);
+}
+
+.admin-login-overlay.hidden {
+  display: none;
+}
+
+body.admin-locked {
+  overflow: hidden;
+}
+
+.admin-login-card {
+  width: min(420px, 100%);
+  background: var(--card);
+  border-radius: 18px;
+  padding: 1.6rem 1.5rem 1.4rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-login-card__head {
+  margin-bottom: 0.4rem;
+}
+
+.admin-login-card__head h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.25rem;
+  color: var(--primary-dark);
+}
+
+.admin-login-card label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.admin-login-card input[type="email"],
+.admin-login-card input[type="password"] {
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font: inherit;
+}
+
+.admin-login-card input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  border-color: var(--primary);
+}
+
+.admin-login-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0.2rem 0 0.3rem;
+}
+
+.admin-login-remember input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.admin-login-card button[type="submit"] {
+  margin-top: 0.4rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 0;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.admin-login-card button[type="submit"]:hover {
+  background: var(--primary-dark);
+}
+
+.admin-login-card button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.admin-login-error {
+  margin: 0.3rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  font-size: 0.85rem;
+}
+
+.admin-login-foot {
+  margin: 0.6rem 0 0;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+/* ============================================================
+   Admin — barre de session (header)
+   ============================================================ */
+.admin-header-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.admin-session {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.85rem;
+  backdrop-filter: blur(6px);
+}
+
+.admin-session__label {
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.admin-session strong {
+  font-weight: 700;
+}
+
+.admin-session .table-btn {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.admin-session .table-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* ============================================================
    Admin — onglets, bandeau, toolbar, header de carte
    ============================================================ */
 .admin-banner {

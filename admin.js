@@ -8,6 +8,151 @@
 
 (function () {
   // ============================================================
+  // AUTHENTIFICATION ADMIN (client-side gate)
+  // ------------------------------------------------------------
+  // Gate simple basé sur SHA-256 du mot de passe.
+  // - Identifiants par défaut : faladespero1@gmail.com / Decroissant@2026
+  // - Surchargeables via runtime-env.js (variables Render) :
+  //     ADMIN_EMAIL                — email autorisé
+  //     ADMIN_PASSWORD_SHA256      — hash SHA-256 (hex, 64 chars) du mot de passe
+  // - Stockage de session :
+  //     sessionStorage shopsenegal.admin.session = "1"          (onglet)
+  //     localStorage   shopsenegal.admin.persistent = "1"       (case "Me garder connecté")
+  // SÉCURITÉ : ce gate empêche un accès "casual" mais n'est pas une vraie
+  // authentification serveur. Pour de la sécurité forte, brancher Supabase Auth.
+  // ============================================================
+  const DEFAULT_ADMIN_EMAIL = "faladespero1@gmail.com";
+  const DEFAULT_ADMIN_PASSWORD_SHA256 =
+    "0c75e7ccf95e35f2aed43c7a5d5636a267e198349094f84242003e41ffa82b47"; // Decroissant@2026
+
+  const runtimeEnv =
+    typeof window.SHOPSENEGAL_RUNTIME === "object" && window.SHOPSENEGAL_RUNTIME !== null
+      ? window.SHOPSENEGAL_RUNTIME
+      : {};
+  const ADMIN_EMAIL =
+    (typeof runtimeEnv.ADMIN_EMAIL === "string" && runtimeEnv.ADMIN_EMAIL.trim()) ||
+    DEFAULT_ADMIN_EMAIL;
+  const ADMIN_PASSWORD_SHA256 =
+    (typeof runtimeEnv.ADMIN_PASSWORD_SHA256 === "string" &&
+      runtimeEnv.ADMIN_PASSWORD_SHA256.trim().toLowerCase()) ||
+    DEFAULT_ADMIN_PASSWORD_SHA256;
+
+  const SESSION_KEY = "shopsenegal.admin.session";
+  const PERSISTENT_KEY = "shopsenegal.admin.persistent";
+
+  const loginOverlay = document.getElementById("admin-login-overlay");
+  const loginForm = document.getElementById("admin-login-form");
+  const loginEmailInput = document.getElementById("admin-login-email");
+  const loginPasswordInput = document.getElementById("admin-login-password");
+  const loginRememberInput = document.getElementById("admin-login-remember");
+  const loginErrorEl = document.getElementById("admin-login-error");
+  const loginSubmitBtn = document.getElementById("admin-login-submit");
+  const sessionBar = document.getElementById("admin-session");
+  const sessionEmail = document.getElementById("admin-session-email");
+  const logoutButton = document.getElementById("admin-logout");
+
+  async function sha256Hex(text) {
+    if (!window.crypto?.subtle) {
+      throw new Error("Web Crypto indisponible sur ce navigateur.");
+    }
+    const buf = new TextEncoder().encode(text);
+    const digest = await window.crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  function isAuthed() {
+    return (
+      sessionStorage.getItem(SESSION_KEY) === "1" ||
+      localStorage.getItem(PERSISTENT_KEY) === "1"
+    );
+  }
+
+  function showLogin() {
+    if (!loginOverlay) return;
+    loginOverlay.classList.remove("hidden");
+    document.body.classList.add("admin-locked");
+    setTimeout(() => loginEmailInput?.focus(), 50);
+  }
+
+  function hideLogin() {
+    if (!loginOverlay) return;
+    loginOverlay.classList.add("hidden");
+    document.body.classList.remove("admin-locked");
+  }
+
+  function showSessionBar() {
+    if (!sessionBar) return;
+    sessionBar.classList.remove("hidden");
+    if (sessionEmail) sessionEmail.textContent = ADMIN_EMAIL;
+  }
+
+  function setLoginError(message) {
+    if (!loginErrorEl) return;
+    if (!message) {
+      loginErrorEl.classList.add("hidden");
+      loginErrorEl.textContent = "";
+    } else {
+      loginErrorEl.classList.remove("hidden");
+      loginErrorEl.textContent = message;
+    }
+  }
+
+  function persistSession(remember) {
+    sessionStorage.setItem(SESSION_KEY, "1");
+    if (remember) localStorage.setItem(PERSISTENT_KEY, "1");
+    else localStorage.removeItem(PERSISTENT_KEY);
+  }
+
+  function clearSession() {
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(PERSISTENT_KEY);
+  }
+
+  loginForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setLoginError("");
+    if (loginSubmitBtn) {
+      loginSubmitBtn.disabled = true;
+      loginSubmitBtn.textContent = "Vérification…";
+    }
+    try {
+      const email = (loginEmailInput.value || "").trim().toLowerCase();
+      const password = loginPasswordInput.value || "";
+      if (!email || !password) {
+        setLoginError("Renseignez l'email et le mot de passe.");
+        return;
+      }
+      const expectedEmail = ADMIN_EMAIL.toLowerCase();
+      const expectedHash = ADMIN_PASSWORD_SHA256.toLowerCase();
+      const hash = (await sha256Hex(password)).toLowerCase();
+      const ok = email === expectedEmail && hash === expectedHash;
+      if (!ok) {
+        setLoginError("Identifiants invalides.");
+        return;
+      }
+      persistSession(Boolean(loginRememberInput?.checked));
+      loginPasswordInput.value = "";
+      hideLogin();
+      showSessionBar();
+      bootDashboard();
+    } catch (err) {
+      setLoginError(err?.message || "Erreur de connexion.");
+    } finally {
+      if (loginSubmitBtn) {
+        loginSubmitBtn.disabled = false;
+        loginSubmitBtn.textContent = "Se connecter";
+      }
+    }
+  });
+
+  logoutButton?.addEventListener("click", () => {
+    clearSession();
+    location.reload();
+  });
+
+  // ============================================================
   // DOM
   // ============================================================
   const tabs = Array.from(document.querySelectorAll(".admin-tab"));
@@ -1268,9 +1413,19 @@
   // ============================================================
   // Boot
   // ============================================================
-  setProductFormMode();
-  setDriverFormMode();
-  setPlaceFormMode();
-  setActiveTab("dashboard");
-  refreshAll();
+  function bootDashboard() {
+    setProductFormMode();
+    setDriverFormMode();
+    setPlaceFormMode();
+    setActiveTab("dashboard");
+    refreshAll();
+  }
+
+  if (isAuthed()) {
+    hideLogin();
+    showSessionBar();
+    bootDashboard();
+  } else {
+    showLogin();
+  }
 })();

@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260523e" />
+    <link rel="stylesheet" href="styles.css?v=20260523f" />
   </head>
   <body>
     <div class="fraud-alert">
@@ -20,6 +20,40 @@
           WhatsApp). Ne validez une commande qu’avec ce numéro.</span
         >
       </div>
+    </div>
+
+    <!-- ============ OVERLAY DE CONNEXION ADMIN ============ -->
+    <div id="admin-login-overlay" class="admin-login-overlay" role="dialog" aria-modal="true" aria-labelledby="admin-login-title">
+      <form id="admin-login-form" class="admin-login-card" autocomplete="off">
+        <header class="admin-login-card__head">
+          <h2 id="admin-login-title">Connexion administrateur</h2>
+          <p class="muted">Accès réservé à l'équipe ShopSenegal.</p>
+        </header>
+        <label for="admin-login-email">Email</label>
+        <input
+          id="admin-login-email"
+          type="email"
+          required
+          autocomplete="username"
+          inputmode="email"
+        />
+        <label for="admin-login-password">Mot de passe</label>
+        <input
+          id="admin-login-password"
+          type="password"
+          required
+          autocomplete="current-password"
+        />
+        <label class="admin-login-remember">
+          <input id="admin-login-remember" type="checkbox" />
+          <span>Me garder connecté sur cet appareil</span>
+        </label>
+        <button type="submit" id="admin-login-submit">Se connecter</button>
+        <p id="admin-login-error" class="admin-login-error hidden" role="alert"></p>
+        <p class="muted admin-login-foot">
+          ShopSenegal · administration sécurisée
+        </p>
+      </form>
     </div>
 
     <nav class="top-nav" aria-label="Navigation principale">
@@ -59,11 +93,22 @@
 
     <header class="hero hero--premium">
       <div class="hero__content container">
-        <h1>Back-office ShopSenegal</h1>
-        <p>
-          Pilotage commandes, catalogue produits, utilisateurs, livreurs et métriques en un
-          coup d'œil.
-        </p>
+        <div class="admin-header-row">
+          <div>
+            <h1>Back-office ShopSenegal</h1>
+            <p>
+              Pilotage commandes, catalogue produits, utilisateurs, livreurs et métriques en un
+              coup d'œil.
+            </p>
+          </div>
+          <div id="admin-session" class="admin-session hidden">
+            <span class="admin-session__label">Connecté :</span>
+            <strong id="admin-session-email"></strong>
+            <button id="admin-logout" type="button" class="table-btn table-btn--neutral">
+              Déconnexion
+            </button>
+          </div>
+        </div>
         <p id="admin-data-banner" class="admin-banner hidden" role="status" aria-live="polite"></p>
       </div>
     </header>
@@ -493,13 +538,13 @@
       </div>
     </footer>
 
-    <script src="nav.js?v=20260523e"></script>
+    <script src="nav.js?v=20260523f"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="runtime-env.js?v=20260523e"></script>
-    <script src="supabase-config.js?v=20260523e"></script>
-    <script src="app-data.js?v=20260523e"></script>
+    <script src="runtime-env.js?v=20260523f"></script>
+    <script src="supabase-config.js?v=20260523f"></script>
+    <script src="app-data.js?v=20260523f"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="admin.js?v=20260523e"></script>
+    <script src="admin.js?v=20260523f"></script>
   </body>
 </html>
