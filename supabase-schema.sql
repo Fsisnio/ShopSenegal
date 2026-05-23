@@ -1,5 +1,8 @@
 create extension if not exists "uuid-ossp";
 
+-- Référence application : drivers, places, users, orders.
+-- Déploiement idempotent recommandé : supabase/migrations/20260523120000_ensure_all_shopsenegal_tables.sql
+
 create table if not exists public.drivers (
   id text primary key,
   first_name text not null,

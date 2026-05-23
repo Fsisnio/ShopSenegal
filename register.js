@@ -11,6 +11,16 @@ function normalizePhone(value) {
   return value.replace(/\s+/g, "");
 }
 
+function initRegisterNotice() {
+  if (!registerStatus || !window.ShopData?.isSupabaseConfigured) return;
+  if (!window.ShopData.isSupabaseConfigured()) {
+    registerStatus.textContent =
+      "Supabase non configure : l'inscription reste uniquement sur ce navigateur. Renseignez supabase-config.js pour envoyer les comptes en base.";
+  }
+}
+
+initRegisterNotice();
+
 registerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -20,6 +30,16 @@ registerForm.addEventListener("submit", async (event) => {
   const address = addressInput.value.trim();
   const password = passwordInput.value;
   const confirmPassword = confirmPasswordInput.value;
+
+  if (!fullName || !phone || !address) {
+    registerStatus.textContent = "Remplissez le nom, le telephone et l'adresse.";
+    return;
+  }
+
+  if (password.length < 6) {
+    registerStatus.textContent = "Le mot de passe doit contenir au moins 6 caracteres.";
+    return;
+  }
 
   if (password !== confirmPassword) {
     registerStatus.textContent = "Les mots de passe ne correspondent pas.";
@@ -38,11 +58,22 @@ registerForm.addEventListener("submit", async (event) => {
 
   const result = await window.ShopData.registerUser(payload);
   if (!result.ok) {
-    registerStatus.textContent =
-      "Ce numero ou email est deja inscrit. Essayez un autre.";
+    if (result.reason === "exists") {
+      registerStatus.textContent =
+        "Ce numero ou email est deja inscrit. Essayez un autre compte.";
+    } else if (result.reason === "db_error") {
+      registerStatus.textContent =
+        "Erreur base de donnees (Supabase). Verifiez la table users, les migrations et les politiques RLS. Details en console (F12).";
+      if (result.message) console.warn("Inscription Supabase:", result.message);
+    } else {
+      registerStatus.textContent = "Impossible de finaliser l'inscription. Reessayez plus tard.";
+    }
     return;
   }
 
-  registerStatus.textContent = "Inscription reussie. Vous pouvez maintenant commander.";
+  registerStatus.textContent =
+    window.ShopData?.isSupabaseConfigured?.()
+      ? "Inscription enregistree en base. Vous pouvez maintenant passer commande depuis l'accueil."
+      : "Compte cree sur cet appareil uniquement : configurez Supabase pour synchroniser.";
   registerForm.reset();
 });

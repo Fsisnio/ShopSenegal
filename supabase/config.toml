@@ -1,5 +1,7 @@
-# Configuration locale / déploiement — voir PAYDUNYA.md
-project_id = ""
+# Ref projet (dashboard URL ou dominio *.supabase.co). Après premier lien :
+# supabase link --project-ref VOTRE_REF
+# Sinon remplissez project_id puis : supabase db push (mot de passe DB demandé au besoin).
+project_id = "mkiajjvpcbrvzqhbbzot"
 
 [functions.paydunya-checkout]
 verify_jwt = false

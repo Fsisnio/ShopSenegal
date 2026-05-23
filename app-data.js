@@ -125,11 +125,14 @@ const ShopData = (() => {
   }
 
   function toUserDb(user) {
+    const emailTrimmed =
+      typeof user.email === "string" && user.email.trim().length > 0 ? user.email.trim() : null;
+
     return {
       id: user.id,
       full_name: user.fullName,
       phone: user.phone,
-      email: user.email,
+      email: emailTrimmed,
       address: user.address,
       password: user.password,
       created_at: user.createdAt
@@ -263,21 +266,64 @@ const ShopData = (() => {
   async function registerUser(user) {
     const client = getSupabaseClient();
     if (client) {
-      let query = client.from("users").select("id").eq("phone", user.phone).limit(1);
-      if (user.email) query = query.or(`email.eq.${user.email},phone.eq.${user.phone}`);
-      const { data: existingRows } = await query;
-      if ((existingRows || []).length > 0) return { ok: false, reason: "exists" };
-      const { error } = await client.from("users").insert(toUserDb(user));
+      const emailNorm =
+        typeof user.email === "string" && user.email.trim().length > 0 ? user.email.trim() : null;
+
+      const { data: byPhone, error: errPhone } = await client
+        .from("users")
+        .select("id")
+        .eq("phone", user.phone)
+        .limit(1);
+      if (errPhone) {
+        console.warn("registerUser duplicate check (phone):", errPhone.message);
+        return { ok: false, reason: "db_error", message: errPhone.message };
+      }
+      if ((byPhone || []).length > 0) return { ok: false, reason: "exists" };
+
+      if (emailNorm) {
+        const { data: byEmail, error: errEmail } = await client
+          .from("users")
+          .select("id")
+          .eq("email", emailNorm)
+          .limit(1);
+        if (errEmail) {
+          console.warn("registerUser duplicate check (email):", errEmail.message);
+          return { ok: false, reason: "db_error", message: errEmail.message };
+        }
+        if ((byEmail || []).length > 0) return { ok: false, reason: "exists" };
+      }
+
+      const { error } = await client.from("users").insert(toUserDb({ ...user, email: emailNorm }));
       if (!error) return { ok: true };
+
+      console.warn("registerUser insert:", error.message);
+      const code = error.code ?? "";
+      const msg = `${error.message} ${code}`.trim();
+      if (
+        code === "23505" ||
+        /duplicate key|already exists|unique constraint/i.test(msg)
+      ) {
+        return { ok: false, reason: "exists" };
+      }
+      return { ok: false, reason: "db_error", message: msg };
     }
 
+    const emailNormFallback =
+      typeof user.email === "string" && user.email.trim().length > 0 ? user.email.trim() : "";
     const users = read(storageKeys.users, []);
-    const exists = users.some(
-      (entry) =>
-        entry.phone === user.phone || (entry.email && user.email && entry.email === user.email)
-    );
+    const exists = users.some((entry) => {
+      const em = typeof entry.email === "string" ? entry.email.trim() : "";
+      return (
+        entry.phone === user.phone ||
+        (!!emailNormFallback && !!em && em === emailNormFallback)
+      );
+    });
     if (exists) return { ok: false, reason: "exists" };
-    users.unshift(user);
+
+    users.unshift({
+      ...user,
+      email: emailNormFallback
+    });
     write(storageKeys.users, users);
     return { ok: true };
   }
@@ -359,6 +405,10 @@ const ShopData = (() => {
 
   ensureSeedData();
 
+  function isSupabaseConfigured() {
+    return getSupabaseClient() !== null;
+  }
+
   return {
     getDrivers,
     getPlaces,
@@ -370,7 +420,8 @@ const ShopData = (() => {
     removeDriver,
     upsertPlace,
     removePlace,
-    updateOrder
+    updateOrder,
+    isSupabaseConfigured
   };
 })();
 

@@ -66,6 +66,9 @@
         </p>
         <div class="hero-cta">
           <a class="btn-link" href="#commande">Commander maintenant</a>
+          <a class="btn-link btn-link--accent" href="?paiement=paydunya#commande"
+            >Payer en ligne (Paydunya)</a
+          >
           <a class="btn-link btn-link--ghost" href="register.html">Créer un compte</a>
           <a class="btn-link btn-link--ghost" href="lieux.html">Voir les lieux couverts</a>
         </div>
@@ -297,13 +300,71 @@
                 <option value="soir">Ce soir</option>
               </select>
             </div>
-            <div class="field">
-              <label for="payment-method">Mode de paiement</label>
-              <select id="payment-method">
+            <div class="field payment-field-full">
+              <div class="payment-field-label" id="payment-method-heading">
+                Comment souhaitez-vous payer ?
+              </div>
+
+              <div
+                id="payment-choices-primary"
+                class="payment-choices payment-choices--primary"
+                role="group"
+                aria-labelledby="payment-method-heading"
+              >
+                <button
+                  type="button"
+                  class="payment-choice payment-choice--paydunya"
+                  data-pay="paydunya"
+                  aria-pressed="false"
+                >
+                  <span class="payment-choice__badge" aria-hidden="true">Sécurisé</span>
+                  <span class="payment-choice__title">Payer en ligne maintenant</span>
+                  <span class="payment-choice__desc">
+                    Paydunya — Wave, Orange Money, carte bancaire
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="payment-choice"
+                  data-pay="a_la_livraison"
+                  aria-pressed="false"
+                >
+                  <span class="payment-choice__title">Payer à la livraison</span>
+                  <span class="payment-choice__desc">Espèces ou mobile money avec le livreur</span>
+                </button>
+              </div>
+
+              <p class="payment-choices-sep muted">Ou indiquez un opérateur classique</p>
+              <div
+                class="payment-choices payment-choices--chips"
+                role="group"
+                aria-label="Mobile money classique"
+              >
+                <button type="button" class="payment-chip" data-pay="wave" aria-pressed="false">
+                  Wave
+                </button>
+                <button
+                  type="button"
+                  class="payment-chip"
+                  data-pay="orange_money"
+                  aria-pressed="false"
+                >
+                  Orange Money
+                </button>
+                <button
+                  type="button"
+                  class="payment-chip"
+                  data-pay="free_money"
+                  aria-pressed="false"
+                >
+                  Free Money
+                </button>
+              </div>
+
+              <label for="payment-method" class="visually-hidden">Valeur technique du mode de paiement</label>
+              <select id="payment-method" class="visually-hidden" tabindex="-1">
                 <option value="a_la_livraison">Paiement a la livraison</option>
-                <option value="paydunya">
-                  Pay en ligne Paydunya (Wave, Orange Money, carte...)
-                </option>
+                <option value="paydunya">Pay en ligne Paydunya</option>
                 <option value="wave">Wave</option>
                 <option value="orange_money">Orange Money</option>
                 <option value="free_money">Free Money</option>
@@ -323,6 +384,7 @@
             placeholder="Ex: Remplacer un produit si indisponible"
           ></textarea>
           <button id="send-order-button" type="submit">Envoyer ma commande</button>
+          <p id="pay-submit-hint" class="muted pay-submit-hint hidden" aria-live="polite"></p>
         </form>
 
         <p id="order-status" class="muted">Votre commande sera envoyee apres validation.</p>

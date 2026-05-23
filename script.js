@@ -23,6 +23,8 @@ const customerNote = document.getElementById("customer-note");
 const deliverySlot = document.getElementById("delivery-slot");
 const paymentMethod = document.getElementById("payment-method");
 const paydunyaPayTip = document.getElementById("paydunya-pay-tip");
+const paySubmitHint = document.getElementById("pay-submit-hint");
+const sendOrderButton = document.getElementById("send-order-button");
 const orderStatus = document.getElementById("order-status");
 const orderActions = document.getElementById("order-actions");
 const whatsappLink = document.getElementById("whatsapp-link");
@@ -70,6 +72,75 @@ function paydunyaCanUseHostedCheckout() {
 function syncPaydunyaPayTip() {
   if (!paymentMethod || !paydunyaPayTip) return;
   paydunyaPayTip.classList.toggle("hidden", paymentMethod.value !== "paydunya");
+}
+
+function syncPaymentChoiceButtons() {
+  if (!paymentMethod || !orderForm) return;
+  const current = paymentMethod.value;
+  orderForm.querySelectorAll("[data-pay]").forEach((el) => {
+    const active = el.dataset.pay === current;
+    el.setAttribute("aria-pressed", active ? "true" : "false");
+    if (el.classList.contains("payment-choice")) {
+      el.classList.toggle("payment-choice--active", active);
+    }
+    if (el.classList.contains("payment-chip")) {
+      el.classList.toggle("payment-chip--active", active);
+    }
+  });
+}
+
+function updateOrderSubmitLabel() {
+  if (!sendOrderButton || !paymentMethod) return;
+  if (paymentMethod.value === "paydunya") {
+    sendOrderButton.textContent = "Continuer vers le paiement sécurisé";
+  } else if (paymentMethod.value === "a_la_livraison") {
+    sendOrderButton.textContent = "Envoyer ma commande (paiement au livreur)";
+  } else {
+    sendOrderButton.textContent = "Envoyer ma commande";
+  }
+}
+
+function updatePaySubmitHint() {
+  if (!paySubmitHint || !paymentMethod) return;
+  if (paymentMethod.value === "paydunya") {
+    paySubmitHint.textContent =
+      "Une fois le formulaire rempli, redirection vers Paydunya pour payer (Wave, Orange Money, carte).";
+    paySubmitHint.classList.remove("hidden");
+  } else if (paymentMethod.value === "a_la_livraison") {
+    paySubmitHint.textContent =
+      "Après envoi : lien WhatsApp. Vous payez lorsque vous recevez la livraison.";
+    paySubmitHint.classList.remove("hidden");
+  } else {
+    paySubmitHint.textContent =
+      "Après envoi : lien WhatsApp pour confirmer le mode Wave / Orange / Free.";
+    paySubmitHint.classList.remove("hidden");
+  }
+}
+
+function syncPaymentUIMode() {
+  syncPaydunyaPayTip();
+  syncPaymentChoiceButtons();
+  updateOrderSubmitLabel();
+  updatePaySubmitHint();
+}
+
+function applyPaymentFromURL() {
+  if (!paymentMethod) return;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const pre = params.get("paiement");
+    if (
+      !pre ||
+      ![...paymentMethod.options].some((option) => {
+        return option.value === pre;
+      })
+    ) {
+      return;
+    }
+    paymentMethod.value = pre;
+  } catch {
+    /** Non bloquant **/
+  }
 }
 
 function updateSummary() {
@@ -315,7 +386,18 @@ ocrButton.addEventListener("click", async () => {
   }
 });
 
-paymentMethod.addEventListener("change", syncPaydunyaPayTip);
+if (paymentMethod) {
+  paymentMethod.addEventListener("change", syncPaymentUIMode);
+}
+
+if (orderForm && paymentMethod) {
+  orderForm.addEventListener("click", (event) => {
+    const payerBtn = event.target.closest("[data-pay]");
+    if (!payerBtn || !orderForm.contains(payerBtn)) return;
+    paymentMethod.value = payerBtn.dataset.pay;
+    syncPaymentUIMode();
+  });
+}
 
 voiceApplyButton.addEventListener("click", () => {
   const transcriptText = voiceTranscript.value.trim();
@@ -476,7 +558,10 @@ orderHistory.addEventListener("click", async (event) => {
   customerAddress.value = order.adresse;
   customerNote.value = order.note || "";
   deliverySlot.value = order.creneau || "maintenant";
-  paymentMethod.value = order.paiement || "a_la_livraison";
+  if (paymentMethod) {
+    paymentMethod.value = order.paiement || "a_la_livraison";
+    syncPaymentUIMode();
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
@@ -511,7 +596,8 @@ if (!SpeechRecognition) {
 async function initHomePage() {
   renderNeeds();
   renderPhotoPreview();
-  syncPaydunyaPayTip();
+  applyPaymentFromURL();
+  syncPaymentUIMode();
   await renderHistory();
 }
 
