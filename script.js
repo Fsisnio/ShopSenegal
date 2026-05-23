@@ -34,13 +34,28 @@ const needs = [];
 
 const PAYMENT_MODES = ["paydunya", "a_la_livraison", "wave", "orange_money", "free_money"];
 
+function paydunyaChoiceRow() {
+  const input = document.querySelector('input[name="payment-choice"][value="paydunya"]');
+  return input?.closest(".payment-choice--paydunya") ?? null;
+}
+
+function isPaydunyaChoiceVisible() {
+  const row = paydunyaChoiceRow();
+  return Boolean(row && !row.classList.contains("hidden"));
+}
+
 function getPaymentValue() {
   const el = document.querySelector('input[name="payment-choice"]:checked');
-  return el?.value ?? "a_la_livraison";
+  const v = el?.value ?? "a_la_livraison";
+  if (v === "paydunya" && !isPaydunyaChoiceVisible()) return "a_la_livraison";
+  return v;
 }
 
 function setPaymentValue(mode) {
-  const normalized = PAYMENT_MODES.includes(mode) ? mode : "a_la_livraison";
+  let normalized = PAYMENT_MODES.includes(mode) ? mode : "a_la_livraison";
+  if (normalized === "paydunya" && !isPaydunyaChoiceVisible()) {
+    normalized = "a_la_livraison";
+  }
   const input = document.querySelector(`input[name="payment-choice"][value="${normalized}"]`);
   if (!(input instanceof HTMLInputElement)) return;
   input.checked = true;

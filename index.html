@@ -10,7 +10,8 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <!-- Bump ?v= when shipping JS/HTML/CSS fixes so CDN/browsers don’t keep stale bundles. -->
+    <link rel="stylesheet" href="styles.css?v=20260523c" />
   </head>
   <body>
     <div class="fraud-alert">
@@ -66,9 +67,6 @@
         </p>
         <div class="hero-cta">
           <a class="btn-link" href="#commande">Commander maintenant</a>
-          <a class="btn-link btn-link--accent" href="?paiement=paydunya#commande"
-            >Payer en ligne (Paydunya)</a
-          >
           <a class="btn-link btn-link--ghost" href="register.html">Créer un compte</a>
           <a class="btn-link btn-link--ghost" href="lieux.html">Voir les lieux couverts</a>
         </div>
@@ -311,7 +309,7 @@
                 role="radiogroup"
                 aria-labelledby="payment-method-heading"
               >
-                <label class="payment-choice payment-choice--paydunya">
+                <label class="payment-choice payment-choice--paydunya hidden">
                   <input type="radio" name="payment-choice" value="paydunya" />
                   <span class="payment-choice__badge" aria-hidden="true">Sécurisé</span>
                   <span class="payment-choice__title">Payer en ligne maintenant</span>
@@ -404,13 +402,13 @@
       </div>
     </footer>
 
-    <script src="nav.js"></script>
+    <script src="nav.js?v=20260523c"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="runtime-env.js"></script>
-    <script src="supabase-config.js"></script>
-    <script src="paydunya-config.js"></script>
-    <script src="app-data.js"></script>
-    <script src="script.js"></script>
+    <script src="runtime-env.js?v=20260523c"></script>
+    <script src="supabase-config.js?v=20260523c"></script>
+    <script src="paydunya-config.js?v=20260523c"></script>
+    <script src="app-data.js?v=20260523c"></script>
+    <script src="script.js?v=20260523c"></script>
   </body>
 </html>

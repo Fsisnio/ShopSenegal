@@ -94,3 +94,9 @@ Pour le mode Paydunya, chaque ligne de la liste doit avoir un **prix unitaire (F
 ---
 
 En cas de doute IPN : la function appelle **`checkout-invoice/confirm/[token]`** et met **`payment_status`** à **Paye** si le statut correspond à un paiement réussi (`completed`, `paid`, …), **Annule** si abandonné ou refusé, **En attente** si **pending**.
+
+## 6. Cache navigateur (paiement / `script.js`)
+
+Après un déploiement qui change le JS ou le markup du formulaire, certains navigateurs (notamment Safari) peuvent garder un **`script.js`** obsolète : l’ancien code cherchait encore un `<select id="payment-method">`, ce qui peut provoquer des erreurs du type `paymentMethod.value` ou bloquer la redirection vers Paydunya.
+
+Les pages HTML chargent les assets locaux avec **`?v=…`** (même suffixe sur tous les fichiers concernés). À chaque livraison importante, **incrémentez ce suffixe** dans les balises `<script>` / `<link rel="stylesheet">` des fichiers `*.html`.
