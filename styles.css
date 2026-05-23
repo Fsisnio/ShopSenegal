@@ -819,6 +819,21 @@ button:focus-visible {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
+.payment-choice input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.payment-choice:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .payment-choice:hover {
   border-color: #bae6d8;
 }
@@ -854,13 +869,17 @@ button:focus-visible {
   line-height: 1.35;
 }
 
-.payment-choice--paydunya {
-  border-color: #99e6f4;
-  background: linear-gradient(160deg, #ecfeff 0%, #f0fdf9 55%, var(--card) 100%);
-  box-shadow: 0 2px 14px rgba(14, 116, 144, 0.12);
+.payment-choice--paydunya:not(:has(input:checked)) {
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: none;
 }
 
-.payment-choice.payment-choice--active {
+.payment-choice--paydunya:not(:has(input:checked)) .payment-choice__badge {
+  opacity: 0.55;
+}
+
+.payment-choice:has(input:checked) {
   border-color: var(--primary);
   box-shadow:
     0 0 0 1px rgba(10, 107, 58, 0.25),
@@ -868,11 +887,16 @@ button:focus-visible {
   transform: translateY(-1px);
 }
 
-.payment-choice--paydunya.payment-choice--active {
+.payment-choice--paydunya:has(input:checked) {
   border-color: #0e7490;
+  background: linear-gradient(160deg, #ecfeff 0%, #f0fdf9 55%, var(--card) 100%);
   box-shadow:
     0 0 0 1px rgba(14, 116, 144, 0.35),
     0 8px 24px rgba(14, 116, 144, 0.15);
+}
+
+.payment-choice--paydunya:has(input:checked) .payment-choice__badge {
+  opacity: 1;
 }
 
 .payment-choices-sep {
@@ -885,6 +909,7 @@ button:focus-visible {
 }
 
 .payment-chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -902,9 +927,25 @@ button:focus-visible {
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
+.payment-chip input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+
 .payment-chip:hover {
   border-color: #cbd5e1;
   background: #f8fafc;
+}
+
+.payment-chip:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .payment-chip:focus-visible {
@@ -912,7 +953,7 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-.payment-chip.payment-chip--active {
+.payment-chip:has(input:checked) {
   border-color: var(--primary);
   background: #e8f5ec;
   color: var(--primary-dark);

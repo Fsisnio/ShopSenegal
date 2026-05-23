@@ -21,7 +21,6 @@ const customerPhone = document.getElementById("customer-phone");
 const customerAddress = document.getElementById("customer-address");
 const customerNote = document.getElementById("customer-note");
 const deliverySlot = document.getElementById("delivery-slot");
-const paymentMethod = document.getElementById("payment-method");
 const paydunyaPayTip = document.getElementById("paydunya-pay-tip");
 const paySubmitHint = document.getElementById("pay-submit-hint");
 const sendOrderButton = document.getElementById("send-order-button");
@@ -32,6 +31,22 @@ const smsLink = document.getElementById("sms-link");
 const orderHistory = document.getElementById("order-history");
 
 const needs = [];
+
+const PAYMENT_MODES = ["paydunya", "a_la_livraison", "wave", "orange_money", "free_money"];
+
+function getPaymentValue() {
+  const el = document.querySelector('input[name="payment-choice"]:checked');
+  return el?.value ?? "a_la_livraison";
+}
+
+function setPaymentValue(mode) {
+  const normalized = PAYMENT_MODES.includes(mode) ? mode : "a_la_livraison";
+  const input = document.querySelector(`input[name="payment-choice"][value="${normalized}"]`);
+  if (!(input instanceof HTMLInputElement)) return;
+  input.checked = true;
+  syncPaymentUIMode();
+}
+
 const frenchNumbers = {
   un: 1,
   une: 1,
@@ -70,30 +85,16 @@ function paydunyaCanUseHostedCheckout() {
 }
 
 function syncPaydunyaPayTip() {
-  if (!paymentMethod || !paydunyaPayTip) return;
-  paydunyaPayTip.classList.toggle("hidden", paymentMethod.value !== "paydunya");
-}
-
-function syncPaymentChoiceButtons() {
-  if (!paymentMethod || !orderForm) return;
-  const current = paymentMethod.value;
-  orderForm.querySelectorAll("[data-pay]").forEach((el) => {
-    const active = el.dataset.pay === current;
-    el.setAttribute("aria-pressed", active ? "true" : "false");
-    if (el.classList.contains("payment-choice")) {
-      el.classList.toggle("payment-choice--active", active);
-    }
-    if (el.classList.contains("payment-chip")) {
-      el.classList.toggle("payment-chip--active", active);
-    }
-  });
+  if (!paydunyaPayTip) return;
+  paydunyaPayTip.classList.toggle("hidden", getPaymentValue() !== "paydunya");
 }
 
 function updateOrderSubmitLabel() {
-  if (!sendOrderButton || !paymentMethod) return;
-  if (paymentMethod.value === "paydunya") {
+  if (!sendOrderButton) return;
+  const pay = getPaymentValue();
+  if (pay === "paydunya") {
     sendOrderButton.textContent = "Continuer vers le paiement sécurisé";
-  } else if (paymentMethod.value === "a_la_livraison") {
+  } else if (pay === "a_la_livraison") {
     sendOrderButton.textContent = "Envoyer ma commande (paiement au livreur)";
   } else {
     sendOrderButton.textContent = "Envoyer ma commande";
@@ -101,12 +102,12 @@ function updateOrderSubmitLabel() {
 }
 
 function updatePaySubmitHint() {
-  if (!paySubmitHint || !paymentMethod) return;
-  if (paymentMethod.value === "paydunya") {
+  if (!paySubmitHint) return;
+  if (getPaymentValue() === "paydunya") {
     paySubmitHint.textContent =
       "Une fois le formulaire rempli, redirection vers Paydunya pour payer (Wave, Orange Money, carte).";
     paySubmitHint.classList.remove("hidden");
-  } else if (paymentMethod.value === "a_la_livraison") {
+  } else if (getPaymentValue() === "a_la_livraison") {
     paySubmitHint.textContent =
       "Après envoi : lien WhatsApp. Vous payez lorsque vous recevez la livraison.";
     paySubmitHint.classList.remove("hidden");
@@ -119,25 +120,18 @@ function updatePaySubmitHint() {
 
 function syncPaymentUIMode() {
   syncPaydunyaPayTip();
-  syncPaymentChoiceButtons();
   updateOrderSubmitLabel();
   updatePaySubmitHint();
 }
 
 function applyPaymentFromURL() {
-  if (!paymentMethod) return;
   try {
     const params = new URLSearchParams(window.location.search);
     const pre = params.get("paiement");
-    if (
-      !pre ||
-      ![...paymentMethod.options].some((option) => {
-        return option.value === pre;
-      })
-    ) {
+    if (!pre || !PAYMENT_MODES.includes(pre)) {
       return;
     }
-    paymentMethod.value = pre;
+    setPaymentValue(pre);
   } catch {
     /** Non bloquant **/
   }
@@ -386,48 +380,47 @@ ocrButton.addEventListener("click", async () => {
   }
 });
 
-if (paymentMethod) {
-  paymentMethod.addEventListener("change", syncPaymentUIMode);
-}
-
-if (orderForm && paymentMethod) {
-  orderForm.addEventListener("click", (event) => {
-    const payerBtn = event.target.closest("[data-pay]");
-    if (!payerBtn || !orderForm.contains(payerBtn)) return;
-    paymentMethod.value = payerBtn.dataset.pay;
-    syncPaymentUIMode();
+if (orderForm) {
+  orderForm.addEventListener("change", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.name === "payment-choice") {
+      syncPaymentUIMode();
+    }
   });
 }
 
-voiceApplyButton.addEventListener("click", () => {
-  const transcriptText = voiceTranscript.value.trim();
-  if (!transcriptText) {
-    voiceStatus.textContent = "Aucune transcription a valider.";
-    return;
-  }
+if (voiceApplyButton) {
+  voiceApplyButton.addEventListener("click", () => {
+    const transcriptText = voiceTranscript.value.trim();
+    if (!transcriptText) {
+      voiceStatus.textContent = "Aucune transcription a valider.";
+      return;
+    }
 
-  const lines = transcriptText
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+    const lines = transcriptText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
 
-  let addedCount = 0;
-  lines.forEach((line) => {
-    const parsed = parseVoiceLine(line);
-    if (!parsed) return;
-    if (addNeed(parsed)) addedCount += 1;
+    let addedCount = 0;
+    lines.forEach((line) => {
+      const parsed = parseVoiceLine(line);
+      if (!parsed) return;
+      if (addNeed(parsed)) addedCount += 1;
+    });
+
+    if (addedCount === 0) {
+      voiceStatus.textContent = "Format non reconnu. Exemple: tomates, 3, boite, roma";
+      return;
+    }
+
+    voiceTranscript.value = "";
+    voiceStatus.textContent = `${addedCount} produit(s) ajoute(s) depuis la transcription.`;
   });
+}
 
-  if (addedCount === 0) {
-    voiceStatus.textContent = "Format non reconnu. Exemple: tomates, 3, boite, roma";
-    return;
-  }
-
-  voiceTranscript.value = "";
-  voiceStatus.textContent = `${addedCount} produit(s) ajoute(s) depuis la transcription.`;
-});
-
-orderForm.addEventListener("submit", async (event) => {
+if (orderForm) {
+  orderForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   orderActions.classList.add("hidden");
 
@@ -444,7 +437,8 @@ orderForm.addEventListener("submit", async (event) => {
   }
 
   const estimatedTotalFcfa = cartTotalFcfa(cart);
-  if (paymentMethod.value === "paydunya") {
+  const payMethod = getPaymentValue();
+  if (payMethod === "paydunya") {
     if (!paydunyaCanUseHostedCheckout()) {
       orderStatus.textContent =
         "Paydunya requiert un projet Supabase configure (voir supabase-config.js) et PAYDUNYA.md.";
@@ -473,7 +467,7 @@ orderForm.addEventListener("submit", async (event) => {
     adresse: customerAddress.value.trim(),
     note: customerNote.value.trim(),
     creneau: deliverySlot.value,
-    paiement: paymentMethod.value,
+    paiement: payMethod,
     besoins: cart,
     photos: Array.from(photoInput.files || []).length,
     status: "Nouvelle",
@@ -483,10 +477,10 @@ orderForm.addEventListener("submit", async (event) => {
   };
 
   const persisted = await window.ShopData.saveOrder(orderPayload, {
-    supabaseExclusive: paymentMethod.value === "paydunya"
+    supabaseExclusive: payMethod === "paydunya"
   });
 
-  if (paymentMethod.value === "paydunya") {
+  if (payMethod === "paydunya") {
     if (persisted !== "supabase") {
       orderStatus.textContent =
         persisted === "failed"
@@ -540,7 +534,8 @@ orderForm.addEventListener("submit", async (event) => {
   orderStatus.textContent = `Commande enregistree pour ${orderPayload.client}.`;
   await renderHistory();
   resetFormAfterOrder();
-});
+  });
+}
 
 orderHistory.addEventListener("click", async (event) => {
   const button = event.target.closest("button[data-repeat]");
@@ -558,10 +553,7 @@ orderHistory.addEventListener("click", async (event) => {
   customerAddress.value = order.adresse;
   customerNote.value = order.note || "";
   deliverySlot.value = order.creneau || "maintenant";
-  if (paymentMethod) {
-    paymentMethod.value = order.paiement || "a_la_livraison";
-    syncPaymentUIMode();
-  }
+  setPaymentValue(order.paiement || "a_la_livraison");
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 

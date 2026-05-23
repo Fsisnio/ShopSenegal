@@ -308,30 +308,27 @@
               <div
                 id="payment-choices-primary"
                 class="payment-choices payment-choices--primary"
-                role="group"
+                role="radiogroup"
                 aria-labelledby="payment-method-heading"
               >
-                <button
-                  type="button"
-                  class="payment-choice payment-choice--paydunya"
-                  data-pay="paydunya"
-                  aria-pressed="false"
-                >
+                <label class="payment-choice payment-choice--paydunya">
+                  <input type="radio" name="payment-choice" value="paydunya" />
                   <span class="payment-choice__badge" aria-hidden="true">Sécurisé</span>
                   <span class="payment-choice__title">Payer en ligne maintenant</span>
                   <span class="payment-choice__desc">
                     Paydunya — Wave, Orange Money, carte bancaire
                   </span>
-                </button>
-                <button
-                  type="button"
-                  class="payment-choice"
-                  data-pay="a_la_livraison"
-                  aria-pressed="false"
-                >
+                </label>
+                <label class="payment-choice">
+                  <input
+                    type="radio"
+                    name="payment-choice"
+                    value="a_la_livraison"
+                    checked
+                  />
                   <span class="payment-choice__title">Payer à la livraison</span>
                   <span class="payment-choice__desc">Espèces ou mobile money avec le livreur</span>
-                </button>
+                </label>
               </div>
 
               <p class="payment-choices-sep muted">Ou indiquez un opérateur classique</p>
@@ -340,35 +337,19 @@
                 role="group"
                 aria-label="Mobile money classique"
               >
-                <button type="button" class="payment-chip" data-pay="wave" aria-pressed="false">
-                  Wave
-                </button>
-                <button
-                  type="button"
-                  class="payment-chip"
-                  data-pay="orange_money"
-                  aria-pressed="false"
-                >
-                  Orange Money
-                </button>
-                <button
-                  type="button"
-                  class="payment-chip"
-                  data-pay="free_money"
-                  aria-pressed="false"
-                >
-                  Free Money
-                </button>
+                <label class="payment-chip">
+                  <input type="radio" name="payment-choice" value="wave" />
+                  <span>Wave</span>
+                </label>
+                <label class="payment-chip">
+                  <input type="radio" name="payment-choice" value="orange_money" />
+                  <span>Orange Money</span>
+                </label>
+                <label class="payment-chip">
+                  <input type="radio" name="payment-choice" value="free_money" />
+                  <span>Free Money</span>
+                </label>
               </div>
-
-              <label for="payment-method" class="visually-hidden">Valeur technique du mode de paiement</label>
-              <select id="payment-method" class="visually-hidden" tabindex="-1">
-                <option value="a_la_livraison">Paiement a la livraison</option>
-                <option value="paydunya">Pay en ligne Paydunya</option>
-                <option value="wave">Wave</option>
-                <option value="orange_money">Orange Money</option>
-                <option value="free_money">Free Money</option>
-              </select>
             </div>
           </div>
 
