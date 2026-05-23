@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260523d" />
+    <link rel="stylesheet" href="styles.css?v=20260523e" />
   </head>
   <body>
     <div class="fraud-alert">
@@ -50,7 +50,7 @@
             <a href="livreurs.html">Livreurs</a>
             <a href="lieux.html">Lieux d'emplette</a>
             <a href="register.html">Inscription</a>
-            <a href="admin.html">Admin</a>
+            <a href="admin.html" aria-current="page">Admin</a>
           </div>
         </div>
       </div>
@@ -60,130 +60,416 @@
     <header class="hero hero--premium">
       <div class="hero__content container">
         <h1>Back-office ShopSenegal</h1>
-        <p>Suivi commandes, assignation et gestion des livreurs / lieux.</p>
+        <p>
+          Pilotage commandes, catalogue produits, utilisateurs, livreurs et métriques en un
+          coup d'œil.
+        </p>
+        <p id="admin-data-banner" class="admin-banner hidden" role="status" aria-live="polite"></p>
       </div>
     </header>
 
     <main class="container admin-grid">
-      <section class="card">
-        <h2>Pilotage global</h2>
-        <p>Vue d'ensemble des performances et segmentation des commandes.</p>
-        <div id="admin-kpis" class="kpi-grid"></div>
-        <div class="charts-grid">
-          <article class="card chart-card">
-            <h3>Segmentation par statut</h3>
-            <canvas id="status-chart" height="170"></canvas>
-          </article>
-          <article class="card chart-card">
-            <h3>Segmentation par paiement</h3>
-            <canvas id="payment-chart" height="170"></canvas>
-          </article>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Segmentation et filtres</h2>
-        <div class="inline-fields">
-          <div class="field">
-            <label for="filter-status">Filtrer par statut</label>
-            <select id="filter-status">
-              <option value="all">Tous</option>
-              <option value="Nouvelle">Nouvelle</option>
-              <option value="En cours">En cours</option>
-              <option value="Livree">Livree</option>
-              <option value="Retournee">Retournee</option>
-              <option value="Perdue">Perdue</option>
-              <option value="Payee">Payee</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="filter-payment">Filtrer par paiement</label>
-            <select id="filter-payment">
-              <option value="all">Tous</option>
-              <option value="a_la_livraison">A la livraison</option>
-              <option value="wave">Wave</option>
-              <option value="orange_money">Orange Money</option>
-              <option value="free_money">Free Money</option>
-              <option value="paydunya">Paydunya</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="filter-search">Recherche client / telephone</label>
-            <input id="filter-search" type="text" placeholder="Ex: Ndiaye ou 77..." />
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Commandes recues</h2>
-        <p>Mettez a jour le statut et assignez un livreur.</p>
-        <div class="table-wrap">
-          <table class="summary-table">
-            <thead>
-              <tr>
-                <th>Client</th>
-                <th>Telephone</th>
-                <th>Produits</th>
-                <th>Statut</th>
-                <th>Paiement statut</th>
-                <th>Livreur</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="admin-orders"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Details de commande</h2>
-        <p>Cliquez sur une commande du tableau pour afficher ses details.</p>
-        <div id="order-details-root" class="detail-sheet muted">
-          Aucune commande selectionnee.
-        </div>
-        <button id="download-order-png" type="button" disabled>
-          Telecharger la commande en PNG
+      <nav class="admin-tabs" role="tablist" aria-label="Sections admin">
+        <button type="button" class="admin-tab admin-tab--active" role="tab" data-tab="dashboard" aria-selected="true">
+          Tableau de bord
         </button>
+        <button type="button" class="admin-tab" role="tab" data-tab="orders" aria-selected="false">
+          Commandes
+        </button>
+        <button type="button" class="admin-tab" role="tab" data-tab="products" aria-selected="false">
+          Produits
+        </button>
+        <button type="button" class="admin-tab" role="tab" data-tab="users" aria-selected="false">
+          Utilisateurs
+        </button>
+        <button type="button" class="admin-tab" role="tab" data-tab="ops" aria-selected="false">
+          Livreurs &amp; lieux
+        </button>
+        <button type="button" class="admin-tab" role="tab" data-tab="exports" aria-selected="false">
+          Exports
+        </button>
+      </nav>
+
+      <!-- ============ TABLEAU DE BORD ============ -->
+      <section class="admin-panel" data-panel="dashboard">
+        <div class="card">
+          <div class="card__header-row">
+            <div>
+              <h2>Pilotage global</h2>
+              <p class="muted">Indicateurs sur la période sélectionnée.</p>
+            </div>
+            <div class="toolbar">
+              <div class="field field--inline">
+                <label for="metrics-period">Période</label>
+                <select id="metrics-period">
+                  <option value="7">7 derniers jours</option>
+                  <option value="30" selected>30 derniers jours</option>
+                  <option value="90">90 derniers jours</option>
+                  <option value="365">12 derniers mois</option>
+                  <option value="all">Tout l'historique</option>
+                </select>
+              </div>
+              <button id="refresh-dashboard" type="button" class="table-btn table-btn--neutral">
+                Rafraîchir
+              </button>
+            </div>
+          </div>
+          <div id="admin-kpis" class="kpi-grid"></div>
+        </div>
+
+        <div class="card">
+          <h2>Évolution &amp; segmentation</h2>
+          <div class="charts-grid">
+            <article class="card chart-card">
+              <h3>Commandes par jour</h3>
+              <canvas id="daily-orders-chart" height="170"></canvas>
+            </article>
+            <article class="card chart-card">
+              <h3>Revenu estimé par jour (FCFA)</h3>
+              <canvas id="daily-revenue-chart" height="170"></canvas>
+            </article>
+            <article class="card chart-card">
+              <h3>Segmentation par statut</h3>
+              <canvas id="status-chart" height="170"></canvas>
+            </article>
+            <article class="card chart-card">
+              <h3>Segmentation par paiement</h3>
+              <canvas id="payment-chart" height="170"></canvas>
+            </article>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Top produits demandés</h2>
+          <p class="muted">Calcul sur la période sélectionnée à partir des lignes de commandes.</p>
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Commandes</th>
+                  <th>Quantité totale</th>
+                  <th>Montant cumulé</th>
+                </tr>
+              </thead>
+              <tbody id="top-products-body">
+                <tr>
+                  <td colspan="4" class="muted">Chargement…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
-      <section class="card">
-        <h2>Ajouter un livreur</h2>
-        <form id="driver-form" class="stack">
-          <input id="driver-firstname" type="text" placeholder="Prenom" required />
-          <input id="driver-lastname" type="text" placeholder="Nom" required />
-          <input id="driver-zone" type="text" placeholder="Zone couverte" required />
-          <input id="driver-photo" type="text" placeholder="URL photo" required />
+      <!-- ============ COMMANDES ============ -->
+      <section class="admin-panel hidden" data-panel="orders">
+        <div class="card">
+          <h2>Filtres &amp; recherche</h2>
+          <div class="inline-fields">
+            <div class="field">
+              <label for="filter-status">Statut</label>
+              <select id="filter-status">
+                <option value="all">Tous</option>
+                <option value="Nouvelle">Nouvelle</option>
+                <option value="En cours">En cours</option>
+                <option value="Livree">Livree</option>
+                <option value="Retournee">Retournee</option>
+                <option value="Perdue">Perdue</option>
+                <option value="Payee">Payee</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filter-payment">Paiement</label>
+              <select id="filter-payment">
+                <option value="all">Tous</option>
+                <option value="a_la_livraison">A la livraison</option>
+                <option value="wave">Wave</option>
+                <option value="orange_money">Orange Money</option>
+                <option value="free_money">Free Money</option>
+                <option value="paydunya">Paydunya</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filter-payment-status">Statut paiement</label>
+              <select id="filter-payment-status">
+                <option value="all">Tous</option>
+                <option value="Non paye">Non paye</option>
+                <option value="En attente">En attente</option>
+                <option value="Partiellement paye">Partiellement paye</option>
+                <option value="Paye">Paye</option>
+                <option value="Annule">Annule</option>
+                <option value="Rembourse">Rembourse</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filter-search">Recherche</label>
+              <input id="filter-search" type="text" placeholder="Client, téléphone, ID…" />
+            </div>
+          </div>
+          <p id="orders-summary" class="muted"></p>
+        </div>
+
+        <div class="card">
+          <div class="card__header-row">
+            <div>
+              <h2>Commandes reçues</h2>
+              <p class="muted">Cliquez sur une ligne pour afficher le détail.</p>
+            </div>
+            <div class="toolbar">
+              <button id="export-orders-csv" type="button" class="table-btn table-btn--neutral">
+                Exporter CSV
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Téléphone</th>
+                  <th>Produits</th>
+                  <th>Statut</th>
+                  <th>Paiement</th>
+                  <th>Livreur</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Détails de commande</h2>
+          <p class="muted">Sélectionnez une commande pour afficher ses détails.</p>
+          <div id="order-details-root" class="detail-sheet muted">
+            Aucune commande sélectionnée.
+          </div>
           <div class="quick-status-actions">
-            <button id="driver-submit-button" type="submit">Ajouter livreur</button>
-            <button id="driver-cancel-edit" type="button" class="table-btn table-btn--neutral hidden">
-              Annuler
+            <button id="download-order-png" type="button" disabled>
+              Télécharger la commande en PNG
+            </button>
+            <button id="delete-order-button" type="button" class="table-btn table-btn--delete" disabled>
+              Supprimer la commande
             </button>
           </div>
-        </form>
-        <div id="admin-drivers" class="history-list"></div>
+        </div>
       </section>
 
-      <section class="card">
-        <h2>Ajouter un lieu d'emplette</h2>
-        <form id="place-form" class="stack">
-          <input id="place-name" type="text" placeholder="Nom du lieu" required />
-          <input id="place-area" type="text" placeholder="Zone" required />
+      <!-- ============ PRODUITS ============ -->
+      <section class="admin-panel hidden" data-panel="products">
+        <div class="card">
+          <h2 id="product-form-title">Ajouter un produit</h2>
+          <p class="muted">
+            Catalogue interne stocké dans Supabase (distinct du fichier
+            <code>data/auchan-products.json</code>). Utilisé pour préparer des suggestions internes
+            ou un futur catalogue éditorial.
+          </p>
+          <form id="product-form" class="stack">
+            <div class="inline-fields">
+              <div class="field">
+                <label for="product-name">Nom *</label>
+                <input id="product-name" type="text" required />
+              </div>
+              <div class="field">
+                <label for="product-brand">Marque</label>
+                <input id="product-brand" type="text" />
+              </div>
+              <div class="field">
+                <label for="product-category">Catégorie</label>
+                <input id="product-category" type="text" />
+              </div>
+              <div class="field">
+                <label for="product-price">Prix (FCFA)</label>
+                <input id="product-price" type="number" min="0" step="50" />
+              </div>
+            </div>
+            <div class="inline-fields">
+              <div class="field">
+                <label for="product-image">URL image</label>
+                <input id="product-image" type="url" placeholder="https://…" />
+              </div>
+              <div class="field">
+                <label for="product-source">URL source (fiche externe)</label>
+                <input id="product-source" type="url" placeholder="https://…" />
+              </div>
+              <div class="field">
+                <label for="product-instock">Disponibilité</label>
+                <select id="product-instock">
+                  <option value="true">En stock</option>
+                  <option value="false">Rupture</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="product-description">Description</label>
+              <textarea id="product-description" rows="2"></textarea>
+            </div>
+            <div class="quick-status-actions">
+              <button id="product-submit-button" type="submit">Ajouter le produit</button>
+              <button id="product-cancel-edit" type="button" class="table-btn table-btn--neutral hidden">
+                Annuler
+              </button>
+            </div>
+            <p id="product-form-status" class="muted" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card__header-row">
+            <div>
+              <h2>Catalogue interne</h2>
+              <p class="muted">
+                <span id="products-count">0</span> produit(s) enregistré(s).
+              </p>
+            </div>
+            <div class="toolbar">
+              <div class="field field--inline">
+                <label for="product-filter">Recherche</label>
+                <input id="product-filter" type="text" placeholder="Nom, marque, catégorie…" />
+              </div>
+              <button id="export-products-csv" type="button" class="table-btn table-btn--neutral">
+                Exporter CSV
+              </button>
+            </div>
+          </div>
+          <div id="admin-products" class="admin-products-grid"></div>
+        </div>
+      </section>
+
+      <!-- ============ UTILISATEURS ============ -->
+      <section class="admin-panel hidden" data-panel="users">
+        <div class="card">
+          <div class="card__header-row">
+            <div>
+              <h2>Utilisateurs inscrits</h2>
+              <p class="muted">
+                <span id="users-count">0</span> compte(s). Cliquez sur un utilisateur pour voir ses
+                commandes.
+              </p>
+            </div>
+            <div class="toolbar">
+              <div class="field field--inline">
+                <label for="users-filter">Recherche</label>
+                <input id="users-filter" type="text" placeholder="Nom, téléphone, email…" />
+              </div>
+              <button id="export-users-csv" type="button" class="table-btn table-btn--neutral">
+                Exporter CSV
+              </button>
+            </div>
+          </div>
+          <div id="admin-users" class="history-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ LIVREURS & LIEUX ============ -->
+      <section class="admin-panel hidden" data-panel="ops">
+        <div class="card">
+          <h2 id="driver-form-title">Ajouter un livreur</h2>
+          <form id="driver-form" class="stack">
+            <div class="inline-fields">
+              <div class="field">
+                <label for="driver-firstname">Prénom</label>
+                <input id="driver-firstname" type="text" required />
+              </div>
+              <div class="field">
+                <label for="driver-lastname">Nom</label>
+                <input id="driver-lastname" type="text" required />
+              </div>
+              <div class="field">
+                <label for="driver-zone">Zone couverte</label>
+                <input id="driver-zone" type="text" required />
+              </div>
+              <div class="field">
+                <label for="driver-photo">URL photo</label>
+                <input id="driver-photo" type="text" required />
+              </div>
+            </div>
+            <div class="quick-status-actions">
+              <button id="driver-submit-button" type="submit">Ajouter livreur</button>
+              <button id="driver-cancel-edit" type="button" class="table-btn table-btn--neutral hidden">
+                Annuler
+              </button>
+            </div>
+          </form>
+          <div id="admin-drivers" class="history-list"></div>
+        </div>
+
+        <div class="card">
+          <h2 id="place-form-title">Ajouter un lieu d'emplette</h2>
+          <form id="place-form" class="stack">
+            <div class="inline-fields">
+              <div class="field">
+                <label for="place-name">Nom du lieu</label>
+                <input id="place-name" type="text" required />
+              </div>
+              <div class="field">
+                <label for="place-area">Zone</label>
+                <input id="place-area" type="text" required />
+              </div>
+            </div>
+            <div class="quick-status-actions">
+              <button id="place-submit-button" type="submit">Ajouter lieu</button>
+              <button id="place-cancel-edit" type="button" class="table-btn table-btn--neutral hidden">
+                Annuler
+              </button>
+            </div>
+          </form>
+          <div id="admin-places" class="history-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ EXPORTS ============ -->
+      <section class="admin-panel hidden" data-panel="exports">
+        <div class="card">
+          <h2>Exports CSV</h2>
+          <p class="muted">
+            Exports rapides pour la comptabilité ou l'analyse externe. Les commandes utilisent le
+            même filtre que l'onglet « Commandes ».
+          </p>
           <div class="quick-status-actions">
-            <button id="place-submit-button" type="submit">Ajouter lieu</button>
-            <button id="place-cancel-edit" type="button" class="table-btn table-btn--neutral hidden">
-              Annuler
+            <button type="button" class="table-btn table-btn--neutral" data-export="orders">
+              Commandes (filtre actif)
+            </button>
+            <button type="button" class="table-btn table-btn--neutral" data-export="users">
+              Utilisateurs
+            </button>
+            <button type="button" class="table-btn table-btn--neutral" data-export="products">
+              Produits
+            </button>
+            <button type="button" class="table-btn table-btn--neutral" data-export="drivers">
+              Livreurs
+            </button>
+            <button type="button" class="table-btn table-btn--neutral" data-export="places">
+              Lieux
             </button>
           </div>
-        </form>
-        <div id="admin-places" class="history-list"></div>
-      </section>
-
-      <section class="card">
-        <h2>Utilisateurs inscrits</h2>
-        <p>Clients ayant cree un compte.</p>
-        <div id="admin-users" class="history-list"></div>
+        </div>
       </section>
     </main>
+
+    <!-- ============ MODALE UTILISATEUR ============ -->
+    <div id="user-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
+      <div class="modal__backdrop" data-modal-close="true"></div>
+      <div class="modal__panel">
+        <header class="modal__head">
+          <h2 id="user-modal-title">Détail utilisateur</h2>
+          <button type="button" class="modal__close" data-modal-close="true" aria-label="Fermer">
+            ×
+          </button>
+        </header>
+        <div id="user-modal-body" class="modal__body"></div>
+        <footer class="modal__foot">
+          <button id="user-modal-delete" type="button" class="table-btn table-btn--delete">
+            Supprimer ce compte
+          </button>
+          <button type="button" class="table-btn table-btn--neutral" data-modal-close="true">
+            Fermer
+          </button>
+        </footer>
+      </div>
+    </div>
 
     <footer class="footer footer--rich">
       <div class="container footer-grid">
@@ -207,13 +493,13 @@
       </div>
     </footer>
 
-    <script src="nav.js?v=20260523d"></script>
+    <script src="nav.js?v=20260523e"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="runtime-env.js?v=20260523d"></script>
-    <script src="supabase-config.js?v=20260523d"></script>
-    <script src="app-data.js?v=20260523d"></script>
+    <script src="runtime-env.js?v=20260523e"></script>
+    <script src="supabase-config.js?v=20260523e"></script>
+    <script src="app-data.js?v=20260523e"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="admin.js?v=20260523d"></script>
+    <script src="admin.js?v=20260523e"></script>
   </body>
 </html>

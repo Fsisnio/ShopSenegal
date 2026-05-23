@@ -3,7 +3,8 @@ const ShopData = (() => {
     drivers: "shopsenegal.drivers",
     places: "shopsenegal.places",
     orders: "shopsenegal.orders",
-    users: "shopsenegal.users"
+    users: "shopsenegal.users",
+    products: "shopsenegal.products"
   };
 
   const defaultDrivers = [
@@ -82,6 +83,9 @@ const ShopData = (() => {
     }
     if (!localStorage.getItem(storageKeys.users)) {
       write(storageKeys.users, []);
+    }
+    if (!localStorage.getItem(storageKeys.products)) {
+      write(storageKeys.products, []);
     }
   }
 
@@ -168,6 +172,40 @@ const ShopData = (() => {
       created_at: order.createdAt,
       paydunya_invoice_token: order.paydunyaInvoiceToken || null,
       estimated_total_fcfa: order.estimatedTotalFcfa ?? null
+    };
+  }
+
+  function toProductDb(product) {
+    return {
+      id: product.id,
+      name: product.name,
+      brand: product.brand || null,
+      category: product.category || null,
+      description: product.description || null,
+      price_fcfa:
+        typeof product.priceFcfa === "number" && Number.isFinite(product.priceFcfa)
+          ? Math.round(product.priceFcfa)
+          : null,
+      image_url: product.imageUrl || null,
+      source_url: product.sourceUrl || null,
+      in_stock: product.inStock !== false,
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  function fromProductDb(row) {
+    return {
+      id: row.id,
+      name: row.name || "",
+      brand: row.brand || "",
+      category: row.category || "",
+      description: row.description || "",
+      priceFcfa: typeof row.price_fcfa === "number" ? row.price_fcfa : null,
+      imageUrl: row.image_url || "",
+      sourceUrl: row.source_url || "",
+      inStock: row.in_stock !== false,
+      createdAt: row.created_at || null,
+      updatedAt: row.updated_at || null
     };
   }
 
@@ -431,6 +469,83 @@ const ShopData = (() => {
     write(storageKeys.orders, orders);
   }
 
+  async function getProducts() {
+    const client = getSupabaseClient();
+    if (client) {
+      const { data, error } = await client
+        .from("products")
+        .select("*")
+        .order("name", { ascending: true });
+      if (!error && Array.isArray(data)) return data.map(fromProductDb);
+      if (error) console.warn("ShopData.getProducts Supabase:", error.message);
+    }
+    return read(storageKeys.products, []);
+  }
+
+  async function upsertProduct(product) {
+    const id = product.id || `prd-${Date.now()}`;
+    const payload = { ...product, id };
+    const client = getSupabaseClient();
+    if (client) {
+      const { error } = await client
+        .from("products")
+        .upsert(toProductDb(payload), { onConflict: "id" });
+      if (!error) return { ok: true, source: "supabase", id };
+      const errText = formatSupabasePersistError(error) || "Upsert refus\u00e9.";
+      console.warn("ShopData.upsertProduct Supabase:", error);
+      // pas de fallback en local quand Supabase est branch\u00e9 : on remonte l'erreur
+      return { ok: false, source: "failed", error: errText };
+    }
+    const products = read(storageKeys.products, []);
+    const idx = products.findIndex((p) => p.id === id);
+    if (idx >= 0) products[idx] = { ...products[idx], ...payload };
+    else products.unshift({ ...payload, createdAt: new Date().toISOString() });
+    write(storageKeys.products, products);
+    return { ok: true, source: "local", id };
+  }
+
+  async function removeProduct(id) {
+    const client = getSupabaseClient();
+    if (client) {
+      const { error } = await client.from("products").delete().eq("id", id);
+      if (!error) return { ok: true, source: "supabase" };
+      const errText = formatSupabasePersistError(error) || "Suppression refus\u00e9e.";
+      console.warn("ShopData.removeProduct Supabase:", error);
+      return { ok: false, source: "failed", error: errText };
+    }
+    const products = read(storageKeys.products, []).filter((p) => p.id !== id);
+    write(storageKeys.products, products);
+    return { ok: true, source: "local" };
+  }
+
+  async function removeOrder(id) {
+    const client = getSupabaseClient();
+    if (client) {
+      const { error } = await client.from("orders").delete().eq("id", id);
+      if (!error) return { ok: true, source: "supabase" };
+      const errText = formatSupabasePersistError(error) || "Suppression refus\u00e9e.";
+      console.warn("ShopData.removeOrder Supabase:", error);
+      return { ok: false, source: "failed", error: errText };
+    }
+    const orders = read(storageKeys.orders, []).filter((o) => o.id !== id);
+    write(storageKeys.orders, orders);
+    return { ok: true, source: "local" };
+  }
+
+  async function removeUser(id) {
+    const client = getSupabaseClient();
+    if (client) {
+      const { error } = await client.from("users").delete().eq("id", id);
+      if (!error) return { ok: true, source: "supabase" };
+      const errText = formatSupabasePersistError(error) || "Suppression refus\u00e9e.";
+      console.warn("ShopData.removeUser Supabase:", error);
+      return { ok: false, source: "failed", error: errText };
+    }
+    const users = read(storageKeys.users, []).filter((u) => u.id !== id);
+    write(storageKeys.users, users);
+    return { ok: true, source: "local" };
+  }
+
   ensureSeedData();
 
   function isSupabaseConfigured() {
@@ -442,6 +557,7 @@ const ShopData = (() => {
     getPlaces,
     getOrders,
     getUsers,
+    getProducts,
     registerUser,
     saveOrder,
     upsertDriver,
@@ -449,6 +565,10 @@ const ShopData = (() => {
     upsertPlace,
     removePlace,
     updateOrder,
+    removeOrder,
+    removeUser,
+    upsertProduct,
+    removeProduct,
     isSupabaseConfigured
   };
 })();
