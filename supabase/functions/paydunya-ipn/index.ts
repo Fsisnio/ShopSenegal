@@ -83,8 +83,17 @@ Deno.serve(async (req) => {
       token: tokenKey
     }, sandbox) as Record<string, unknown>;
 
-    const statusRaw = confirmed.status;
-    const status = typeof statusRaw === "string" ? statusRaw.toLowerCase() : "";
+    /** Statut facture PAR : COMPLETED/PENDING/CANCELLED (doc Paydunya) ; parfois en minuscules. */
+    const invBlock = confirmed.invoice;
+    let statusRaw: unknown =
+      typeof confirmed.status === "string"
+        ? confirmed.status
+        : invBlock &&
+            typeof invBlock === "object" &&
+            typeof (invBlock as { status?: unknown }).status === "string"
+          ? (invBlock as { status: string }).status
+          : "";
+    const status = typeof statusRaw === "string" ? statusRaw.trim().toLowerCase() : "";
 
     if (confirmed.response_code !== "00") {
       return new Response(JSON.stringify({ ok: false }), {
@@ -97,18 +106,36 @@ Deno.serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceKey);
 
-    if (status === "completed") {
+    const paidStatuses = new Set(["completed", "paid", "success"]);
+    const pendingStatuses = new Set(["pending", "processing"]);
+    const failedStatuses = new Set([
+      "cancelled",
+      "canceled",
+      "failed",
+      "fail",
+      "abandoned",
+      "expired"
+    ]);
+
+    let paymentStatus: string | null = null;
+
+    if (paidStatuses.has(status)) {
+      paymentStatus = "Paye";
+    } else if (pendingStatuses.has(status)) {
+      paymentStatus = "En attente";
+    } else if (failedStatuses.has(status)) {
+      paymentStatus = "Annule";
+    }
+
+    if (paymentStatus) {
       const updateRow = {
-        payment_status: "Paye",
+        payment_status: paymentStatus,
         paydunya_invoice_token: invoiceToken
       };
       if (orderIdFromCustom) {
         await admin.from("orders").update(updateRow).eq("id", orderIdFromCustom);
       } else {
-        await admin.from("orders").update(updateRow).eq(
-          "paydunya_invoice_token",
-          invoiceToken
-        );
+        await admin.from("orders").update(updateRow).eq("paydunya_invoice_token", invoiceToken);
       }
     }
 

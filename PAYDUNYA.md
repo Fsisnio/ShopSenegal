@@ -48,6 +48,23 @@ Annulation : `{SITE_PUBLIC_URL}/index.html#commande`
 
 Vous pouvez surcharger avec `PAYDUNYA_RETURN_URL` et `PAYDUNYA_CANCEL_URL` si besoin.
 
+Les URLs **retour** et **annulation** envoyées à Paydunya incluent **`?order=<id_commande>`** (avant `#fragment` s’il y en a). La page **`payment-return.html`** interroge Supabase (polling + `anon`) jusqu’à **`Paye`** ou **`Annule`**, puis prépare WhatsApp/SMS. Paydunya peut aussi passer **`token=`** dans l’URL ; la même page retrouve la commande via **`paydunya_invoice_token`**.
+
+### Flux résumé
+
+1. **`script.js`** enregistre la commande (`payment_status` **En attente** pour ce mode) puis appelle **`paydunya-checkout`**.
+2. **IPN (`paydunya-ipn`)** appelle **`confirm`** puis aligne **`payment_status`** (**Paye**, **En attente**, **Annule**) selon Paydunya.
+3. Retour client : **`payment-return.html?order=o-…`**.
+
+| `payment_status` | Cas |
+| --- | --- |
+| **En attente** | Facture pending ou flux IPN incomplet |
+| **Paye** | **`completed`** / **`paid`** (confirm PAR) |
+| **Annule** | **`cancelled`** / **`failed`** / équivalents |
+
+Après mise à jour du code, redéployez :  
+`supabase functions deploy paydunya-checkout paydunya-ipn --no-verify-jwt`
+
 ## 4. Côté navigateur (`paydunya-config.js`)
 
 Une fois déployées les fonctions, configurez :
@@ -60,9 +77,15 @@ localStorage.setItem(
 localStorage.setItem('shopsenegal.paydunya.checkoutSecret', 'LA_MEME_SECRETE_QUE_PAYDUNYA_CHECKOUT_SECRET');
 ```
 
-Ou renseignez directement dans `paydunya-config.js` (évitez de committer des valeurs réelles).
+Ou renseignez directement dans `paydunya-config.js` ou une méta facultative :
 
-Le front doit aussi avoir **`supabase-config.js`** (URL projet + anon key) pour enregistrer les commandes dans Supabase : sans base en ligne, le flux Paydunya ne peut pas vérifier le montant depuis le serveur.
+```html
+<meta name="shopsenegal-paydunya-checkout-url" content="https://VOTRE_REF.supabase.co/functions/v1/paydunya-checkout" />
+```
+
+_(Évitez de committer vos URLs et secrets réels.)_
+
+Le front doit aussi charger **`supabase-config.js`** (URL projet + **clé anon**) : enregistrement des commandes, appel à `paydunya-checkout` et **polling** sur `payment-return.html`.
 
 ## 5. Montant à payer
 
@@ -70,4 +93,4 @@ Pour le mode Paydunya, chaque ligne de la liste doit avoir un **prix unitaire (F
 
 ---
 
-En cas de doute IPN : après réception du POST, la function appelle **`checkout-invoice/confirm/[token]`** et ne passe la commande en **Payé** que si Paydunya répond **`status: completed`**.
+En cas de doute IPN : la function appelle **`checkout-invoice/confirm/[token]`** et met **`payment_status`** à **Paye** si le statut correspond à un paiement réussi (`completed`, `paid`, …), **Annule** si abandonné ou refusé, **En attente** si **pending**.

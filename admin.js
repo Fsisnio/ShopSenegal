@@ -247,8 +247,10 @@ async function renderOrders() {
       <td>
         <select data-order-id="${order.id}" data-type="payment-status">
           <option value="Non paye" ${order.paymentStatus === "Non paye" ? "selected" : ""}>Non paye</option>
+          <option value="En attente" ${order.paymentStatus === "En attente" ? "selected" : ""}>En attente Paydunya</option>
           <option value="Partiellement paye" ${order.paymentStatus === "Partiellement paye" ? "selected" : ""}>Partiellement paye</option>
           <option value="Paye" ${order.paymentStatus === "Paye" ? "selected" : ""}>Paye</option>
+          <option value="Annule" ${order.paymentStatus === "Annule" ? "selected" : ""}>Annule / echoue</option>
           <option value="Rembourse" ${order.paymentStatus === "Rembourse" ? "selected" : ""}>Rembourse</option>
         </select>
       </td>

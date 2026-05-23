@@ -96,6 +96,23 @@ Deno.serve(async (req) => {
     const callbackUrl =
       `${supabaseUrl.replace(/\/$/, "")}/functions/v1/paydunya-ipn`;
 
+    /**
+     * URL de retour client : inclure l’id commande pour la page payment-return.html
+     * (polling Supabase). Paydunya ajoute souvent `token=` en plus.
+     */
+    function appendOrderReturnParam(urlRaw: string, oid: string): string {
+      const u = urlRaw.trim();
+      if (!u || !oid || /[\?&]order=/.test(u)) return u;
+      const hashIdx = u.indexOf("#");
+      const base = hashIdx >= 0 ? u.slice(0, hashIdx) : u;
+      const hashPart = hashIdx >= 0 ? u.slice(hashIdx) : "";
+      const join = base.includes("?") ? "&" : "?";
+      return `${base}${join}order=${encodeURIComponent(oid)}${hashPart}`;
+    }
+
+    const returnUrlBuilt = appendOrderReturnParam(returnUrlRaw, orderId);
+    const cancelUrlBuilt = appendOrderReturnParam(cancelUrlRaw, orderId);
+
     const admin = createClient(supabaseUrl, serviceKey);
     const { data: row, error: selErr } = await admin.from("orders").select("*").eq("id", orderId).maybeSingle();
 
@@ -160,8 +177,8 @@ Deno.serve(async (req) => {
     };
 
     const actionsBlock = payload.actions as Record<string, string>;
-    if (returnUrlRaw) actionsBlock.return_url = returnUrlRaw;
-    if (cancelUrlRaw) actionsBlock.cancel_url = cancelUrlRaw;
+    if (returnUrlBuilt) actionsBlock.return_url = returnUrlBuilt;
+    if (cancelUrlBuilt) actionsBlock.cancel_url = cancelUrlBuilt;
     if (callbackUrl) actionsBlock.callback_url = callbackUrl;
 
     const pdRes = await paydunyaCreateCheckoutInvoice(payload, {

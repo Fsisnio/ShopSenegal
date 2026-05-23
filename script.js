@@ -290,7 +290,7 @@ async function renderHistory() {
     item.innerHTML = `
       <div>
         <strong>${order.client}</strong>
-        <p>${order.besoins.length} produit(s) - ${order.paiement}</p>
+        <p>${order.besoins.length} produit(s) — ${order.paiement} — <span class="muted">${order.paymentStatus || "Non paye"}</span></p>
       </div>
       <button type="button" class="table-btn table-btn--edit" data-repeat="${order.id}">
         Recommander
@@ -421,119 +421,140 @@ if (voiceApplyButton) {
 
 if (orderForm) {
   orderForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  orderActions.classList.add("hidden");
+    event.preventDefault();
+    orderActions.classList.add("hidden");
 
-  if (voiceTranscript.value.trim()) {
-    orderStatus.textContent =
-      "Validez d'abord la transcription vocale avant l'envoi de la commande.";
-    return;
-  }
-
-  const cart = getNeeds();
-  if (cart.length === 0) {
-    orderStatus.textContent = "Ajoutez au moins un besoin avant d'envoyer votre commande.";
-    return;
-  }
-
-  const estimatedTotalFcfa = cartTotalFcfa(cart);
-  const payMethod = getPaymentValue();
-  if (payMethod === "paydunya") {
-    if (!paydunyaCanUseHostedCheckout()) {
+    if (voiceTranscript.value.trim()) {
       orderStatus.textContent =
-        "Paydunya requiert un projet Supabase configure (voir supabase-config.js) et PAYDUNYA.md.";
-      orderActions.classList.add("hidden");
+        "Validez d'abord la transcription vocale avant l'envoi de la commande.";
       return;
     }
-    if (estimatedTotalFcfa < 100) {
-      orderStatus.textContent =
-        "Pour Paydunya, remplissez le prix unitaire (FCFA) de chaque produit dans la liste avant envoi.";
-      orderActions.classList.add("hidden");
+
+    const cart = getNeeds();
+    if (cart.length === 0) {
+      orderStatus.textContent = "Ajoutez au moins un besoin avant d'envoyer votre commande.";
       return;
     }
-    const payCfg = window.PAYDUNYA_CONFIG || {};
-    if (!payCfg.checkoutFnUrl?.trim?.()) {
-      orderStatus.textContent =
-        'Configurez l’URL Paydunya (paydunya-config.js ou cle localStorage shopsenegal.paydunya.checkoutFnUrl).';
-      orderActions.classList.add("hidden");
-      return;
-    }
-  }
 
-  const orderPayload = {
-    id: `o-${Date.now()}`,
-    client: customerName.value.trim(),
-    telephone: customerPhone.value.trim(),
-    adresse: customerAddress.value.trim(),
-    note: customerNote.value.trim(),
-    creneau: deliverySlot.value,
-    paiement: payMethod,
-    besoins: cart,
-    photos: Array.from(photoInput.files || []).length,
-    status: "Nouvelle",
-    paymentStatus: "Non paye",
-    estimatedTotalFcfa: estimatedTotalFcfa > 0 ? estimatedTotalFcfa : null,
-    createdAt: new Date().toISOString()
-  };
-
-  const persisted = await window.ShopData.saveOrder(orderPayload, {
-    supabaseExclusive: payMethod === "paydunya"
-  });
-
-  if (payMethod === "paydunya") {
-    if (persisted !== "supabase") {
-      orderStatus.textContent =
-        persisted === "failed"
-          ? "Commande refusee par Supabase (executez les migrations PAYDUNYA.md / colonnes orders)."
-          : "Paydunya requiert une base Supabase disponible.";
-      orderActions.classList.add("hidden");
-      return;
-    }
-    const payCfg = window.PAYDUNYA_CONFIG || {};
-    try {
-      const anonKey = window.SUPABASE_CONFIG?.anonKey || "";
-      const res = await fetch(payCfg.checkoutFnUrl.trim(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(anonKey ? { Authorization: `Bearer ${anonKey}`, apikey: anonKey } : {}),
-          ...(payCfg.checkoutSecret?.trim?.()
-            ? { "x-paydunya-checkout-secret": payCfg.checkoutSecret.trim() }
-            : {})
-        },
-        body: JSON.stringify({ orderId: orderPayload.id })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.checkoutUrl) {
-        throw new Error(
-          typeof data.error === "string" ? data.error : "Creation facture Paydunya impossible."
-        );
+    const estimatedTotalFcfa = cartTotalFcfa(cart);
+    const payMethod = getPaymentValue();
+    if (payMethod === "paydunya") {
+      if (!paydunyaCanUseHostedCheckout()) {
+        orderStatus.textContent =
+          "Paydunya requiert un projet Supabase configure (voir supabase-config.js) et PAYDUNYA.md.";
+        orderActions.classList.add("hidden");
+        return;
       }
-      window.location.assign(data.checkoutUrl);
-      return;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      orderStatus.textContent = `Paydunya: ${msg} Vous pouvez contacter WhatsApp avec votre reference ${orderPayload.id}.`;
-      const messageFallback = buildOrderMessage(orderPayload);
-      const encoded = encodeURIComponent(messageFallback);
+      if (estimatedTotalFcfa < 100) {
+        orderStatus.textContent =
+          "Pour Paydunya, remplissez le prix unitaire (FCFA) de chaque produit dans la liste avant envoi.";
+        orderActions.classList.add("hidden");
+        return;
+      }
+      const payCfgEarly = window.PAYDUNYA_CONFIG || {};
+      if (!payCfgEarly.checkoutFnUrl?.trim?.()) {
+        orderStatus.textContent =
+          "Configurez l'URL Paydunya (paydunya-config.js, méta shopsenegal-paydunya-checkout-url, ou cle localStorage shopsenegal.paydunya.checkoutFnUrl).";
+        orderActions.classList.add("hidden");
+        return;
+      }
+    }
+
+    const submitBtn = sendOrderButton;
+    const prevSubmitText = submitBtn?.textContent ?? "";
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent =
+        payMethod === "paydunya" ? "Préparation Paydunya…" : "Envoi en cours…";
+    }
+
+    let navigatingToPaydunya = false;
+
+    try {
+      const orderPayload = {
+        id: `o-${Date.now()}`,
+        client: customerName.value.trim(),
+        telephone: customerPhone.value.trim(),
+        adresse: customerAddress.value.trim(),
+        note: customerNote.value.trim(),
+        creneau: deliverySlot.value,
+        paiement: payMethod,
+        besoins: cart,
+        photos: Array.from(photoInput.files || []).length,
+        status: "Nouvelle",
+        paymentStatus: payMethod === "paydunya" ? "En attente" : "Non paye",
+        estimatedTotalFcfa: estimatedTotalFcfa > 0 ? estimatedTotalFcfa : null,
+        createdAt: new Date().toISOString()
+      };
+
+      const persisted = await window.ShopData.saveOrder(orderPayload, {
+        supabaseExclusive: payMethod === "paydunya"
+      });
+
+      if (payMethod === "paydunya") {
+        if (persisted !== "supabase") {
+          orderStatus.textContent =
+            persisted === "failed"
+              ? "Commande refusee par Supabase (executez les migrations PAYDUNYA.md / colonnes orders)."
+              : "Paydunya requiert une base Supabase disponible.";
+          orderActions.classList.add("hidden");
+          return;
+        }
+        const payCfg = window.PAYDUNYA_CONFIG || {};
+        try {
+          const anonKey = window.SUPABASE_CONFIG?.anonKey || "";
+          const res = await fetch(payCfg.checkoutFnUrl.trim(), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(anonKey ? { Authorization: `Bearer ${anonKey}`, apikey: anonKey } : {}),
+              ...(payCfg.checkoutSecret?.trim?.()
+                ? { "x-paydunya-checkout-secret": payCfg.checkoutSecret.trim() }
+                : {})
+            },
+            body: JSON.stringify({ orderId: orderPayload.id })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.checkoutUrl) {
+            throw new Error(
+              typeof data.error === "string" ? data.error : "Creation facture Paydunya impossible."
+            );
+          }
+          sessionStorage.setItem("shopsenegal.pendingPayOrderId", orderPayload.id);
+          navigatingToPaydunya = true;
+          window.location.assign(data.checkoutUrl);
+          return;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          orderStatus.textContent = `Paydunya: ${msg} Vous pouvez contacter WhatsApp avec votre reference ${orderPayload.id}.`;
+          const messageFallback = buildOrderMessage(orderPayload);
+          const encoded = encodeURIComponent(messageFallback);
+          whatsappLink.href = `https://wa.me/221773542551?text=${encoded}`;
+          smsLink.href = `sms:+221773542551?body=${encoded}`;
+          orderActions.classList.remove("hidden");
+          await renderHistory();
+          resetFormAfterOrder();
+          sessionStorage.removeItem("shopsenegal.pendingPayOrderId");
+          return;
+        }
+      }
+
+      const message = buildOrderMessage(orderPayload);
+      const encoded = encodeURIComponent(message);
       whatsappLink.href = `https://wa.me/221773542551?text=${encoded}`;
       smsLink.href = `sms:+221773542551?body=${encoded}`;
       orderActions.classList.remove("hidden");
+
+      orderStatus.textContent = `Commande enregistree pour ${orderPayload.client}.`;
       await renderHistory();
       resetFormAfterOrder();
-      return;
+    } finally {
+      if (submitBtn && !navigatingToPaydunya) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = prevSubmitText || submitBtn.textContent;
+        updateOrderSubmitLabel();
+      }
     }
-  }
-
-  const message = buildOrderMessage(orderPayload);
-  const encoded = encodeURIComponent(message);
-  whatsappLink.href = `https://wa.me/221773542551?text=${encoded}`;
-  smsLink.href = `sms:+221773542551?body=${encoded}`;
-  orderActions.classList.remove("hidden");
-
-  orderStatus.textContent = `Commande enregistree pour ${orderPayload.client}.`;
-  await renderHistory();
-  resetFormAfterOrder();
   });
 }
 

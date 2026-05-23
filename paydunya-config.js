@@ -1,17 +1,27 @@
 /**
  * Paiements Paydunya (Redirect Checkout).
  *
- * Déployez les Edge Functions dans supabase/functions/ puis définissez l'URL ici :
- * exemple : https://VOTRE_REF.supabase.co/functions/v1/paydunya-checkout
+ * Déployez les Edge Functions puis renseignez l’URL, par exemple :
+ * https://VOTRE_REF.supabase.co/functions/v1/paydunya-checkout
  *
- * En production, utilisez PAYDUNYA_CHECKOUT_SECRET côté function et la même valeur
- * dans PAYDUNYA_CONFIG.checkoutSecret (localStorage ou remplissez checkoutSecret ci-dessous — évitez de commit des secrets réels).
+ * Possibilités (par ordre) :
+ * 1) Méta-balise avant ce script dans index.html :
+ *    <meta name="shopsenegal-paydunya-checkout-url" content="https://.../paydunya-checkout" />
+ * 2) localStorage : shopsenegal.paydunya.checkoutFnUrl
+ * 3) Mettre checkoutFnUrl codé dur plus bas pour la prod uniquement — ne pas committer de secrets réels ;
+ *    PAYDUNYA_CHECKOUT_SECRET (Edge Function + checkoutSecret ci-dessous même valeur).
  */
-window.PAYDUNYA_CONFIG = {
-  checkoutFnUrl:
-    localStorage.getItem("shopsenegal.paydunya.checkoutFnUrl") ||
-    "",
+(function () {
+  const metaCheckout = document.querySelector(
+    'meta[name="shopsenegal-paydunya-checkout-url"]'
+  )?.content?.trim?.();
 
-  checkoutSecret:
-    localStorage.getItem("shopsenegal.paydunya.checkoutSecret") || ""
-};
+  window.PAYDUNYA_CONFIG = {
+    checkoutFnUrl:
+      metaCheckout ||
+      localStorage.getItem("shopsenegal.paydunya.checkoutFnUrl") ||
+      "",
+
+    checkoutSecret: localStorage.getItem("shopsenegal.paydunya.checkoutSecret") || ""
+  };
+})();

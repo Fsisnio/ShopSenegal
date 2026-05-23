@@ -13,19 +13,33 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="container stack-lg card" style="max-width: 640px; margin: 4rem auto">
-      <h1>Merci !</h1>
-      <p>
-        Si vous avez régularisé le paiement via Paydunya, la confirmation peut prendre quelques
-        secondes. Vous pouvez fermer cet onglet et continuer votre commande depuis l’application.
+    <main class="container stack-lg card payment-return-main">
+      <p id="pr-spinner" class="muted" aria-live="polite">
+        Actualisation du statut paiement…
       </p>
-      <p class="muted">
-        En cas de doute ou pour finaliser votre livraison, contactez le numéro officiel :
-        <a href="tel:+221773542551">+221 77 354 25 51</a> (appel ou WhatsApp).
+      <h1 id="pr-title">Merci pour votre paiement.</h1>
+      <p id="pr-message" class="muted">
+        Nous vérifions la confirmation envoyée par Paydunya vers notre système…
       </p>
-      <p>
-        <a class="btn-link" href="index.html">Retour à l’accueil</a>
-      </p>
+      <dl id="pr-details" class="payment-return-details hidden"></dl>
+      <div class="order-actions stack" style="margin-top: 0.75rem">
+        <a
+          id="pr-whatsapp"
+          class="btn-link"
+          href="https://wa.me/221773542551?text="
+          target="_blank"
+          rel="noopener noreferrer"
+          >Confirmer sur WhatsApp</a
+        >
+        <a id="pr-sms" class="btn-link btn-link--ghost" href="sms:+221773542551?body="
+          >Envoyer par SMS</a
+        >
+        <a class="btn-link" href="index.html">← Retour à l’accueil</a>
+      </div>
+      <p id="pr-hint" class="muted" style="font-size: 0.875rem; margin-top: 1rem"></p>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="payment-return.js"></script>
   </body>
 </html>

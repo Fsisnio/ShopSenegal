@@ -1844,3 +1844,27 @@ main p.muted a {
 main p.muted a:hover {
   text-decoration: underline;
 }
+
+/* Retour Paydunya (payment-return.html) */
+.payment-return-main {
+  max-width: 640px;
+  margin: 4rem auto;
+}
+
+.payment-return-details {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.4rem 1.25rem;
+  margin-top: 0.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.payment-return-details dt {
+  margin: 0;
+  font-weight: 650;
+}
+
+.payment-return-details dd {
+  margin: 0;
+}
