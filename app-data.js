@@ -162,7 +162,9 @@ const ShopData = (() => {
       status: order.status,
       payment_status: order.paymentStatus,
       assigned_driver: order.assignedDriver || null,
-      created_at: order.createdAt
+      created_at: order.createdAt,
+      paydunya_invoice_token: order.paydunyaInvoiceToken || null,
+      estimated_total_fcfa: order.estimatedTotalFcfa ?? null
     };
   }
 
@@ -180,7 +182,10 @@ const ShopData = (() => {
       status: row.status,
       paymentStatus: row.payment_status || "Non paye",
       assignedDriver: row.assigned_driver || "",
-      createdAt: row.created_at
+      createdAt: row.created_at,
+      paydunyaInvoiceToken: row.paydunya_invoice_token || "",
+      estimatedTotalFcfa:
+        typeof row.estimated_total_fcfa === "number" ? row.estimated_total_fcfa : null
     };
   }
 
@@ -228,15 +233,19 @@ const ShopData = (() => {
     return read(storageKeys.orders, []);
   }
 
-  async function saveOrder(order) {
+  async function saveOrder(order, options = {}) {
+    const supabaseExclusive = options.supabaseExclusive === true;
     const client = getSupabaseClient();
     if (client) {
       const { error } = await client.from("orders").insert(toOrderDb(order));
-      if (!error) return;
+      if (!error) return "supabase";
+      console.warn("ShopData.saveOrder Supabase:", error.message);
+      if (supabaseExclusive) return "failed";
     }
     const orders = read(storageKeys.orders, []);
     orders.unshift(order);
     write(storageKeys.orders, orders);
+    return "local";
   }
 
   async function getUsers() {
@@ -331,6 +340,12 @@ const ShopData = (() => {
       }
       if (Object.prototype.hasOwnProperty.call(patch, "paymentStatus")) {
         updatePayload.payment_status = patch.paymentStatus;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, "paydunyaInvoiceToken")) {
+        updatePayload.paydunya_invoice_token = patch.paydunyaInvoiceToken || null;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, "estimatedTotalFcfa")) {
+        updatePayload.estimated_total_fcfa = patch.estimatedTotalFcfa;
       }
       const { error } = await client.from("orders").update(updatePayload).eq("id", orderId);
       if (!error) return;

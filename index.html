@@ -15,7 +15,10 @@
   <body>
     <div class="fraud-alert">
       <div class="fraud-alert__track">
-        <span>Anti fraude: Ceci est le seul numero de commande: +221773542551</span>
+        <span
+          >Anti-fraude — Numéro officiel ShopSenegal : <strong>+221 77 354 25 51</strong> (appel ou
+          WhatsApp). Ne validez une commande qu’avec ce numéro.</span
+        >
       </div>
     </div>
 
@@ -43,6 +46,7 @@
         <div id="primary-nav" class="top-nav__drawer" role="navigation">
           <div class="top-nav__links">
             <a href="index.html">Accueil</a>
+            <a href="products.html">Produits</a>
             <a href="livreurs.html">Livreurs</a>
             <a href="lieux.html">Lieux d'emplette</a>
             <a href="register.html">Inscription</a>
@@ -297,12 +301,21 @@
               <label for="payment-method">Mode de paiement</label>
               <select id="payment-method">
                 <option value="a_la_livraison">Paiement a la livraison</option>
+                <option value="paydunya">
+                  Pay en ligne Paydunya (Wave, Orange Money, carte...)
+                </option>
                 <option value="wave">Wave</option>
                 <option value="orange_money">Orange Money</option>
                 <option value="free_money">Free Money</option>
               </select>
             </div>
           </div>
+
+          <p id="paydunya-pay-tip" class="muted hidden">
+            Pour Paydunya, indiquez le <strong>prix unitaire</strong> (FCFA) de chaque produit dans
+            le tableau du dessus pour calculer la facture. Le flux redirige vers la page officielle
+            Paydunya. Voir <a href="PAYDUNYA.md">PAYDUNYA.md</a> pour deployer Supabase Functions.
+          </p>
           <label for="customer-note">Note complementaire (optionnel)</label>
           <textarea
             id="customer-note"
@@ -333,14 +346,17 @@
           <p>On fait les courses comme vous et pour vous.</p>
         </div>
         <div>
-          <strong>Contact</strong>
-          <p>Telephone / WhatsApp: +221773542551</p>
-          <p>Disponibilite: 7j/7 - 8h a 22h</p>
+          <strong>Contact officiel</strong>
+          <p>Téléphone / WhatsApp : <a href="tel:+221773542551">+221 77 354 25 51</a></p>
+          <p>Disponibilité : 7j/7 — 8h à 22h (heure de Dakar)</p>
         </div>
         <div>
-          <strong>Informations</strong>
-          <p>Politique de confidentialite</p>
-          <p>Conditions generales d'utilisation</p>
+          <strong>Informations légales</strong>
+          <nav class="footer-legal-links" aria-label="Informations légales">
+            <a href="mentions-legales.html">Mentions légales</a>
+            <a href="cgu.html">Conditions générales d'utilisation</a>
+            <a href="politique-confidentialite.html">Politique de confidentialité</a>
+          </nav>
         </div>
       </div>
     </footer>
@@ -349,6 +365,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="paydunya-config.js"></script>
     <script src="app-data.js"></script>
     <script src="script.js"></script>
   </body>

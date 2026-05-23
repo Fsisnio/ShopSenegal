@@ -37,7 +37,9 @@ create table if not exists public.orders (
   status text not null default 'Nouvelle',
   payment_status text not null default 'Non paye',
   assigned_driver text,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  paydunya_invoice_token text,
+  estimated_total_fcfa integer
 );
 
 alter table public.drivers enable row level security;

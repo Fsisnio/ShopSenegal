@@ -1,0 +1,8 @@
+# Configuration locale / déploiement — voir PAYDUNYA.md
+project_id = ""
+
+[functions.paydunya-checkout]
+verify_jwt = false
+
+[functions.paydunya-ipn]
+verify_jwt = false
