@@ -1222,6 +1222,16 @@ body.shop-feedback-open {
   filter: brightness(0.95);
 }
 
+/* Production : pas de texte technique sous le formulaire commande */
+.site--production #pay-submit-hint,
+.site--production #order-status.order-status--prod-hidden {
+  display: none !important;
+}
+
+.site--production #register-status.register-status--prod-hidden {
+  display: none !important;
+}
+
 /* ============================================================
    Admin — overlay de connexion
    ============================================================ */

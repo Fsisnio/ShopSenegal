@@ -34,12 +34,63 @@ const needs = [];
 
 const PAYMENT_MODES = ["paydunya", "a_la_livraison", "wave", "orange_money", "free_money"];
 
-function notifyOrder(type, title, message) {
-  if (orderStatus) orderStatus.textContent = message;
+function isPublicProduction() {
+  return Boolean(window.ShopSite?.isPublicProduction?.());
+}
+
+/** Messages clients en production (sans admin, Supabase, Render, F12…). */
+function publicOrderFeedback(type, title, message, clientName) {
+  const name = clientName ? String(clientName).trim() : "";
+  if (type === "success") {
+    return {
+      title: "Commande envoyée",
+      message: name
+        ? `Merci ${name} ! Votre commande a bien été reçue par ShopSenegal.\nVous pouvez confirmer via WhatsApp ci-dessous.`
+        : "Merci ! Votre commande a bien été reçue par ShopSenegal.\nVous pouvez confirmer via WhatsApp ci-dessous."
+    };
+  }
+  if (type === "warn") {
+    const hints = {
+      "Panier vide": "Ajoutez au moins un produit à votre liste avant d'envoyer la commande.",
+      "Transcription en attente":
+        "Validez d'abord la transcription vocale avant d'envoyer votre commande.",
+      "Montant insuffisant":
+        "Indiquez le prix unitaire (FCFA) de chaque produit dans la liste avant l'envoi.",
+      "Commande enregistrée":
+        "Utilisez le lien WhatsApp ci-dessous pour transmettre votre commande à l'équipe."
+    };
+    if (hints[title]) return { title, message: hints[title] };
+    return {
+      title: title || "Information",
+      message:
+        "Votre demande a été prise en compte. Utilisez le lien WhatsApp ci-dessous ou appelez le +221 77 354 25 51."
+    };
+  }
+  return {
+    title: title || "Envoi impossible",
+    message:
+      "Nous n'avons pas pu finaliser l'envoi pour le moment. Vérifiez vos informations et réessayez, ou contactez-nous sur WhatsApp au +221 77 354 25 51."
+  };
+}
+
+function notifyOrder(type, title, message, options = {}) {
+  const prod = isPublicProduction();
+  const pub = prod ? publicOrderFeedback(type, title, message, options.clientName) : { title, message };
+
+  if (orderStatus) {
+    if (prod) {
+      orderStatus.classList.add("order-status--prod-hidden");
+      orderStatus.textContent = "";
+    } else {
+      orderStatus.classList.remove("order-status--prod-hidden");
+      orderStatus.textContent = message;
+    }
+  }
+
   if (!window.ShopFeedback) return;
-  if (type === "success") window.ShopFeedback.success(title, message);
-  else if (type === "error") window.ShopFeedback.error(title, message);
-  else window.ShopFeedback.warn(title, message);
+  if (type === "success") window.ShopFeedback.success(pub.title, pub.message);
+  else if (type === "error") window.ShopFeedback.error(pub.title, pub.message);
+  else window.ShopFeedback.warn(pub.title, pub.message);
 }
 
 function paydunyaChoiceRow() {
@@ -131,6 +182,11 @@ function updateOrderSubmitLabel() {
 
 function updatePaySubmitHint() {
   if (!paySubmitHint) return;
+  if (isPublicProduction()) {
+    paySubmitHint.textContent = "";
+    paySubmitHint.classList.add("hidden");
+    return;
+  }
   if (getPaymentValue() === "paydunya") {
     const lines = [
       "Une fois le formulaire rempli, redirection vers Paydunya pour payer (Wave, Orange Money, carte)."
@@ -617,23 +673,13 @@ if (orderForm) {
       orderActions.classList.remove("hidden");
 
       if (persisted.source === "supabase") {
-        notifyOrder(
-          "success",
-          "Commande envoyée",
-          `Merci ${orderPayload.client} ! Votre commande est enregistrée et visible par l'équipe ShopSenegal.\nConfirmez aussi via WhatsApp si vous le souhaitez.`
-        );
+        notifyOrder("success", "Commande envoyée", "", { clientName: orderPayload.client });
       } else if (persisted.source === "local_fallback") {
-        notifyOrder(
-          "warn",
-          "Commande enregistrée localement",
-          `La base a refusé l'enregistrement : ${persisted.error || "erreur inconnue"}.\nLa commande est sauvegardée sur cet appareil. Utilisez WhatsApp ci-dessous pour la transmettre.`
-        );
+        notifyOrder("warn", "Commande enregistrée", persisted.error || "", {
+          clientName: orderPayload.client
+        });
       } else {
-        notifyOrder(
-          "warn",
-          "Commande sur cet appareil uniquement",
-          "Supabase n'est pas configuré sur le serveur. La commande reste sur ce navigateur.\nConfigurez SUPABASE_URL et SUPABASE_ANON_KEY sur Render, puis rechargez la page."
-        );
+        notifyOrder("warn", "Commande enregistrée", "", { clientName: orderPayload.client });
       }
 
       await renderHistory();

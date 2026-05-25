@@ -107,6 +107,18 @@
     }
   }
 
+  /** Site public déployé (pas localhost / fichier local). */
+  function isPublicProduction() {
+    const host = (location.hostname || "").toLowerCase();
+    if (!host || host === "localhost" || host === "127.0.0.1") return false;
+    if (location.protocol === "file:") return false;
+    return true;
+  }
+
+  if (isPublicProduction()) {
+    document.documentElement.classList.add("site--production");
+  }
+
   window.ShopFeedback = {
     success(title, message, options) {
       show("success", title, message, options);
@@ -119,4 +131,6 @@
     },
     close: closePopup
   };
+
+  window.ShopSite = { isPublicProduction };
 })();
