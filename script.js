@@ -34,6 +34,14 @@ const needs = [];
 
 const PAYMENT_MODES = ["paydunya", "a_la_livraison", "wave", "orange_money", "free_money"];
 
+function notifyOrder(type, title, message) {
+  if (orderStatus) orderStatus.textContent = message;
+  if (!window.ShopFeedback) return;
+  if (type === "success") window.ShopFeedback.success(title, message);
+  else if (type === "error") window.ShopFeedback.error(title, message);
+  else window.ShopFeedback.warn(title, message);
+}
+
 function paydunyaChoiceRow() {
   const input = document.querySelector('input[name="payment-choice"][value="paydunya"]');
   return input?.closest(".payment-choice--paydunya") ?? null;
@@ -462,14 +470,21 @@ if (orderForm) {
     orderActions.classList.add("hidden");
 
     if (voiceTranscript.value.trim()) {
-      orderStatus.textContent =
-        "Validez d'abord la transcription vocale avant l'envoi de la commande.";
+      notifyOrder(
+        "warn",
+        "Transcription en attente",
+        "Validez d'abord la transcription vocale avant d'envoyer votre commande."
+      );
       return;
     }
 
     const cart = getNeeds();
     if (cart.length === 0) {
-      orderStatus.textContent = "Ajoutez au moins un besoin avant d'envoyer votre commande.";
+      notifyOrder(
+        "warn",
+        "Panier vide",
+        "Ajoutez au moins un produit à votre liste avant d'envoyer la commande."
+      );
       return;
     }
 
@@ -477,20 +492,29 @@ if (orderForm) {
     const payMethod = getPaymentValue();
     if (payMethod === "paydunya") {
       if (!paydunyaCanUseHostedCheckout()) {
-        orderStatus.textContent =
-          "Pay en ligne inactive : projet Supabase non configure dans le navigateur. Sur Render definissez SUPABASE_URL + SUPABASE_ANON_KEY ou remplissez supabase-config (voir DEPLOY_RENDER.md).";
+        notifyOrder(
+          "error",
+          "Paiement en ligne indisponible",
+          "Supabase n'est pas configuré sur ce site. Définissez SUPABASE_URL et SUPABASE_ANON_KEY sur Render (voir DEPLOY_RENDER.md)."
+        );
         orderActions.classList.add("hidden");
         return;
       }
       if (estimatedTotalFcfa < 100) {
-        orderStatus.textContent =
-          "Pour Paydunya, remplissez le prix unitaire (FCFA) de chaque produit dans la liste avant envoi.";
+        notifyOrder(
+          "warn",
+          "Montant insuffisant",
+          "Pour Paydunya, indiquez le prix unitaire (FCFA) de chaque produit dans la liste avant l'envoi."
+        );
         orderActions.classList.add("hidden");
         return;
       }
       if (!paydunyaCheckoutFnUrlConfigured()) {
-        orderStatus.textContent =
-          "Definissez l URL de paydunya-checkout (Render : PAYDUNYA_CHECKOUT_FN_URL ou paydunya-config / meta / localStorage).";
+        notifyOrder(
+          "error",
+          "Paiement en ligne indisponible",
+          "L'URL de la fonction paydunya-checkout n'est pas configurée (PAYDUNYA_CHECKOUT_FN_URL sur Render)."
+        );
         orderActions.classList.add("hidden");
         return;
       }
@@ -529,12 +553,17 @@ if (orderForm) {
 
       if (payMethod === "paydunya") {
         if (persisted.source !== "supabase") {
-          orderStatus.textContent =
+          const errDetail =
             persisted.source === "failed"
-              ? `Commande refusee par Supabase : ${persisted.error || "voir la console (F12)."}.`
+              ? persisted.error || "Voir la console (F12) pour le détail."
               : persisted.source === "local_fallback"
-                ? `Commande refusee par Supabase : ${persisted.error || "voir la console."}.`
-                : "Pay en ligne impossible : projet Supabase non configure (SUPABASE_URL + SUPABASE_ANON_KEY sur le serveur).";
+                ? persisted.error || "La base a refusé l'enregistrement."
+                : "Projet Supabase non configuré sur le serveur.";
+          notifyOrder(
+            "error",
+            "Commande non enregistrée",
+            `Impossible de préparer le paiement Paydunya.\n${errDetail}`
+          );
           orderActions.classList.add("hidden");
           return;
         }
@@ -564,7 +593,11 @@ if (orderForm) {
           return;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
-          orderStatus.textContent = `Paydunya: ${msg} Vous pouvez contacter WhatsApp avec votre reference ${orderPayload.id}.`;
+          notifyOrder(
+            "error",
+            "Paiement Paydunya échoué",
+            `${msg}\nRéférence commande : ${orderPayload.id}. Utilisez WhatsApp ci-dessous pour confirmer.`
+          );
           const messageFallback = buildOrderMessage(orderPayload);
           const encoded = encodeURIComponent(messageFallback);
           whatsappLink.href = `https://wa.me/221773542551?text=${encoded}`;
@@ -584,12 +617,23 @@ if (orderForm) {
       orderActions.classList.remove("hidden");
 
       if (persisted.source === "supabase") {
-        orderStatus.textContent = `Commande enregistree pour ${orderPayload.client} (visible dans l admin / Supabase).`;
+        notifyOrder(
+          "success",
+          "Commande envoyée",
+          `Merci ${orderPayload.client} ! Votre commande est enregistrée et visible par l'équipe ShopSenegal.\nConfirmez aussi via WhatsApp si vous le souhaitez.`
+        );
       } else if (persisted.source === "local_fallback") {
-        orderStatus.textContent = `Attention : commande uniquement sur cet appareil. La base refuse l enregistrement : ${persisted.error || ""} Utilisez WhatsApp ci-dessous pour transmettre la commande.`;
+        notifyOrder(
+          "warn",
+          "Commande enregistrée localement",
+          `La base a refusé l'enregistrement : ${persisted.error || "erreur inconnue"}.\nLa commande est sauvegardée sur cet appareil. Utilisez WhatsApp ci-dessous pour la transmettre.`
+        );
       } else {
-        orderStatus.textContent =
-          `Commande enregistree sur cet appareil uniquement : configurez SUPABASE_URL et SUPABASE_ANON_KEY sur votre hebergeur (Render), redeployez, puis rechargez la page pour synchroniser avec la base.`;
+        notifyOrder(
+          "warn",
+          "Commande sur cet appareil uniquement",
+          "Supabase n'est pas configuré sur le serveur. La commande reste sur ce navigateur.\nConfigurez SUPABASE_URL et SUPABASE_ANON_KEY sur Render, puis rechargez la page."
+        );
       }
 
       await renderHistory();
