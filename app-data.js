@@ -12,49 +12,65 @@ const ShopData = (() => {
       id: "d1",
       firstName: "Mamadou",
       lastName: "Ndiaye",
-      zone: "Dakar Plateau",
+      zone: "Thiès centre",
       photo: "https://i.pravatar.cc/200?img=12"
     },
     {
       id: "d2",
       firstName: "Awa",
       lastName: "Diop",
-      zone: "Pikine / Guediawaye",
+      zone: "Thiès Keur Mbaye Fall",
       photo: "https://i.pravatar.cc/200?img=5"
     },
     {
       id: "d3",
       firstName: "Ibrahima",
       lastName: "Fall",
-      zone: "Mermoz / Sacre-Coeur",
+      zone: "Thiès Tilène",
       photo: "https://i.pravatar.cc/200?img=22"
     },
     {
       id: "d4",
       firstName: "Fatou",
       lastName: "Sarr",
-      zone: "Rufisque / Bargny",
+      zone: "Thiès Grand Standing",
       photo: "https://i.pravatar.cc/200?img=32"
     },
     {
       id: "d5",
       firstName: "Cheikh",
       lastName: "Kane",
-      zone: "Medina / Fass",
+      zone: "Thiès sortie Dakar",
       photo: "https://i.pravatar.cc/200?img=45"
     }
   ];
 
+  /** Marchés et lieux d'emplette de la ville de Thiès, Sénégal */
   const defaultPlaces = [
-    { id: "p1", name: "Marche Sandaga", area: "Dakar" },
-    { id: "p2", name: "Marche Tilene", area: "Dakar" },
-    { id: "p3", name: "Marche Kermel", area: "Dakar" },
-    { id: "p4", name: "Auchan", area: "Plusieurs zones" },
-    { id: "p5", name: "Auchan Mermoz", area: "Mermoz" },
-    { id: "p6", name: "EDK", area: "Plusieurs zones" },
-    { id: "p7", name: "Carrefour Liberte", area: "Liberte" },
-    { id: "p8", name: "Marches de quartier", area: "Dakar, Thies, Saint-Louis" }
+    { id: "p1", name: "Marché Assane Lô", area: "Thiès centre" },
+    { id: "p2", name: "Marché Tilène", area: "Thiès" },
+    { id: "p3", name: "Marché Keur Mbaye Fall", area: "Thiès" },
+    { id: "p4", name: "Marché Grand Standing", area: "Thiès" },
+    { id: "p5", name: "Marché Thiaday", area: "Thiès" },
+    { id: "p6", name: "Marché Manko", area: "Thiès" },
+    { id: "p7", name: "Marché Ngangate", area: "Thiès" },
+    { id: "p8", name: "Auchan Thiès", area: "Thiès" },
+    { id: "p9", name: "Casino Thiès", area: "Thiès" },
+    { id: "p10", name: "Marché de quartier (Thiès)", area: "Thiès" }
   ];
+
+  const THIES_AREA_PATTERN = /thi[eè]s/i;
+
+  function isThiesMarket(place) {
+    if (!place || typeof place !== "object") return false;
+    const area = String(place.area ?? "");
+    const name = String(place.name ?? "");
+    return THIES_AREA_PATTERN.test(area) || THIES_AREA_PATTERN.test(name);
+  }
+
+  function filterThiesPlaces(places) {
+    return (Array.isArray(places) ? places : []).filter(isThiesMarket);
+  }
 
   function read(key, fallback) {
     const raw = localStorage.getItem(key);
@@ -77,6 +93,11 @@ const ShopData = (() => {
     }
     if (!localStorage.getItem(storageKeys.places)) {
       write(storageKeys.places, defaultPlaces);
+    }
+    const placesDataVersion = "thies-2026";
+    if (localStorage.getItem("shopsenegal.places.version") !== placesDataVersion) {
+      write(storageKeys.places, defaultPlaces);
+      localStorage.setItem("shopsenegal.places.version", placesDataVersion);
     }
     if (!localStorage.getItem(storageKeys.orders)) {
       write(storageKeys.orders, []);
@@ -269,9 +290,9 @@ const ShopData = (() => {
     if (client) {
       await seedSupabaseIfEmpty(client);
       const { data, error } = await client.from("places").select("*").order("name");
-      if (!error && Array.isArray(data)) return data;
+      if (!error && Array.isArray(data)) return filterThiesPlaces(data);
     }
-    return read(storageKeys.places, defaultPlaces);
+    return filterThiesPlaces(read(storageKeys.places, defaultPlaces));
   }
 
   async function getOrders() {
