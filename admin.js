@@ -3,7 +3,7 @@
  *
  * Sections : tableau de bord, commandes, produits, utilisateurs, livreurs & lieux, exports.
  * Reste sans dépendance de bundling : Chart.js + html2canvas + supabase-js sont chargés
- * en CDN dans admin.html.
+ * en CDN dans enangon_Admin.html.
  */
 
 (function () {

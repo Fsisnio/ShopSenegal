@@ -33,7 +33,7 @@ Optionnel (si votre Edge Function exige une entête secret côté client) :
 
 | `PAYDUNYA_CHECKOUT_SECRET` | Même valeur que le secret **`PAYDUNYA_CHECKOUT_SECRET`** défini dans Supabase pour la fonction checkout |
 
-### Compte administrateur (`admin.html`)
+### Compte administrateur (`enangon_Admin.html`)
 
 | Variable | Description |
 | -------- | ----------- |
