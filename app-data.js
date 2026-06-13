@@ -153,6 +153,53 @@ const ShopData = (() => {
     };
   }
 
+  function fromPlaceDb(row) {
+    return {
+      id: row.id,
+      name: row.name,
+      area: row.area
+    };
+  }
+
+  function isStaleLegacyPlace(place) {
+    const area = String(place?.area ?? "");
+    return /dakar|saint-louis/i.test(area);
+  }
+
+  function mergeThiesPlacesCatalog(dbPlaces) {
+    const byId = new Map(defaultPlaces.map((place) => [place.id, place]));
+    (Array.isArray(dbPlaces) ? dbPlaces : [])
+      .map(fromPlaceDb)
+      .filter((place) => isThiesMarket(place) && !isStaleLegacyPlace(place))
+      .forEach((place) => {
+        if (!byId.has(place.id)) byId.set(place.id, place);
+      });
+    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  }
+
+  async function syncThiesPlacesCatalog(client) {
+    const { error: upsertError } = await client
+      .from("places")
+      .upsert(defaultPlaces.map(toPlaceDb), { onConflict: "id" });
+    if (upsertError) {
+      console.warn("ShopData.syncThiesPlacesCatalog upsert:", upsertError);
+      return false;
+    }
+
+    const { data, error: selectError } = await client.from("places").select("id, name, area");
+    if (selectError || !Array.isArray(data)) {
+      console.warn("ShopData.syncThiesPlacesCatalog select:", selectError);
+      return false;
+    }
+
+    const staleIds = data.filter(isStaleLegacyPlace).map((row) => row.id);
+    if (staleIds.length > 0) {
+      const { error: deleteError } = await client.from("places").delete().in("id", staleIds);
+      if (deleteError) console.warn("ShopData.syncThiesPlacesCatalog delete:", deleteError);
+    }
+    return true;
+  }
+
   function toUserDb(user) {
     const emailTrimmed =
       typeof user.email === "string" && user.email.trim().length > 0 ? user.email.trim() : null;
@@ -288,11 +335,14 @@ const ShopData = (() => {
   async function getPlaces() {
     const client = getSupabaseClient();
     if (client) {
-      await seedSupabaseIfEmpty(client);
+      await syncThiesPlacesCatalog(client);
       const { data, error } = await client.from("places").select("*").order("name");
-      if (!error && Array.isArray(data)) return filterThiesPlaces(data);
+      if (!error && Array.isArray(data)) {
+        return mergeThiesPlacesCatalog(data);
+      }
     }
-    return filterThiesPlaces(read(storageKeys.places, defaultPlaces));
+    ensureSeedData();
+    return mergeThiesPlacesCatalog(read(storageKeys.places, defaultPlaces));
   }
 
   async function getOrders() {

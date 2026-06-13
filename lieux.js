@@ -21,7 +21,7 @@ async function initPlacesPage() {
     item.className = "place-item";
     item.innerHTML = `
       <strong>${place.name}</strong>
-      <p>Thiès — ${place.area || "Sénégal"}</p>
+      <p>${place.area || "Thiès"}</p>
     `;
     placesRoot.appendChild(item);
   });
