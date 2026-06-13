@@ -13,7 +13,9 @@ insert into public.places (id, name, area) values
   ('p7', 'Marché Ngangate', 'Thiès'),
   ('p8', 'Auchan Thiès', 'Thiès'),
   ('p9', 'Casino Thiès', 'Thiès'),
-  ('p10', 'Marché de quartier (Thiès)', 'Thiès')
+  ('p10', 'Marché de quartier (Thiès)', 'Thiès'),
+  ('p11', 'Carrefour Thiès', 'Thiès'),
+  ('p12', 'EDK Thiès', 'Thiès')
 on conflict (id) do update set
   name = excluded.name,
   area = excluded.area;

@@ -56,7 +56,9 @@ const ShopData = (() => {
     { id: "p7", name: "Marché Ngangate", area: "Thiès" },
     { id: "p8", name: "Auchan Thiès", area: "Thiès" },
     { id: "p9", name: "Casino Thiès", area: "Thiès" },
-    { id: "p10", name: "Marché de quartier (Thiès)", area: "Thiès" }
+    { id: "p10", name: "Marché de quartier (Thiès)", area: "Thiès" },
+    { id: "p11", name: "Carrefour Thiès", area: "Thiès" },
+    { id: "p12", name: "EDK Thiès", area: "Thiès" }
   ];
 
   const THIES_AREA_PATTERN = /thi[eè]s/i;
@@ -94,7 +96,7 @@ const ShopData = (() => {
     if (!localStorage.getItem(storageKeys.places)) {
       write(storageKeys.places, defaultPlaces);
     }
-    const placesDataVersion = "thies-2026";
+    const placesDataVersion = "thies-2026-v2";
     if (localStorage.getItem("shopsenegal.places.version") !== placesDataVersion) {
       write(storageKeys.places, defaultPlaces);
       localStorage.setItem("shopsenegal.places.version", placesDataVersion);
