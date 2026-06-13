@@ -90,6 +90,10 @@ const ShopData = (() => {
   }
 
   function getSupabaseClient() {
+    if (window.ShopAdminAuth?.getClient) {
+      const adminClient = window.ShopAdminAuth.getClient();
+      if (adminClient) return adminClient;
+    }
     const config = window.SUPABASE_CONFIG || {};
     const hasConfig =
       typeof config.url === "string" &&

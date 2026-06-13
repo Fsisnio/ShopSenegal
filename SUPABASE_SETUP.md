@@ -25,7 +25,7 @@ location.reload();
 ## 4) Verifier
 
 - Creer une commande depuis `index.html`
-- Aller dans `enangon_Admin.html`
+- Aller dans `enangon_Admin.html` (voir **`AUTH_ADMIN.md`** pour créer le compte Supabase Auth)
 - Verifier que la commande apparait aussi dans les tables Supabase:
   - `orders`
   - `users`

@@ -35,20 +35,13 @@ Optionnel (si votre Edge Function exige une entête secret côté client) :
 
 ### Compte administrateur (`enangon_Admin.html`)
 
-| Variable | Description |
-| -------- | ----------- |
-| `ADMIN_EMAIL` | Email autorisé pour l'admin (par défaut compilé : `faladespero1@gmail.com`) |
-| `ADMIN_PASSWORD_SHA256` | SHA-256 hex (64 chars) du mot de passe admin (par défaut compilé : hash de `Decroissant@2026`) |
+L’admin utilise **Supabase Auth** (email + mot de passe). Voir **`AUTH_ADMIN.md`** pour :
 
-Pour générer un nouveau hash :
+1. Appliquer la migration `20260613100000_admin_auth.sql` (table `admin_users`)
+2. Créer l’utilisateur dans **Authentication → Users**
+3. Vérifier que l’email figure dans `admin_users`
 
-```bash
-node -e "console.log(require('crypto').createHash('sha256').update('VOTRE_MOT_DE_PASSE').digest('hex'))"
-```
-
-ou en shell : `printf '%s' 'VOTRE_MOT_DE_PASSE' | shasum -a 256`
-
-> ⚠️ **Sécurité** : ce gate est uniquement côté navigateur (le hash est téléchargé avec `admin.js`). Il bloque l'accès « ouvert » mais peut être contourné par un utilisateur déterminé qui lit la console. Pour une vraie authentification serveur, brancher **Supabase Auth** (`signInWithPassword`) sur le formulaire.
+Les anciennes variables `ADMIN_EMAIL` / `ADMIN_PASSWORD_SHA256` ne sont plus utilisées.
 
 Voir aussi **`PAYDUNYA.md`** pour déployer les fonctions (`paydunya-checkout`, `paydunya-ipn`) et **`SITE_PUBLIC_URL`** côté Supabase.
 
