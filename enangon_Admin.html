@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260613a" />
+    <link rel="stylesheet" href="styles.css?v=20260613c" />
   </head>
   <body>
     <div class="fraud-alert">
@@ -81,7 +81,7 @@
           <div class="top-nav__links">
             <a href="index.html">Accueil</a>
             <a href="products.html">Produits</a>
-            <a href="livreurs.html">Livreurs</a>
+            <a href="livreurs.html" class="nav-link--hidden" hidden>Livreurs</a>
             <a href="lieux.html">Lieux d'emplette</a>
             <a href="register.html">Inscription</a>
             <a href="enangon_Admin.html" aria-current="page">Admin</a>
@@ -97,7 +97,7 @@
           <div>
             <h1>Back-office ShopSenegal</h1>
             <p>
-              Pilotage commandes, catalogue produits, utilisateurs, livreurs et métriques en un
+              Pilotage commandes, catalogue produits, utilisateurs, lieux d'emplette et métriques en un
               coup d'œil.
             </p>
           </div>
@@ -128,7 +128,7 @@
           Utilisateurs
         </button>
         <button type="button" class="admin-tab" role="tab" data-tab="ops" aria-selected="false">
-          Livreurs &amp; lieux
+          Lieux
         </button>
         <button type="button" class="admin-tab" role="tab" data-tab="exports" aria-selected="false">
           Exports
@@ -408,9 +408,9 @@
         </div>
       </section>
 
-      <!-- ============ LIVREURS & LIEUX ============ -->
+      <!-- ============ LIEUX ============ -->
       <section class="admin-panel hidden" data-panel="ops">
-        <div class="card">
+        <div class="card hidden" id="admin-drivers-section" aria-hidden="true">
           <h2 id="driver-form-title">Ajouter un livreur</h2>
           <form id="driver-form" class="stack">
             <div class="inline-fields">
@@ -483,7 +483,7 @@
             <button type="button" class="table-btn table-btn--neutral" data-export="products">
               Produits
             </button>
-            <button type="button" class="table-btn table-btn--neutral" data-export="drivers">
+            <button type="button" class="table-btn table-btn--neutral hidden" data-export="drivers" hidden>
               Livreurs
             </button>
             <button type="button" class="table-btn table-btn--neutral" data-export="places">
@@ -538,14 +538,14 @@
       </div>
     </footer>
 
-    <script src="nav.js?v=20260613a"></script>
+    <script src="nav.js?v=20260613c"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="runtime-env.js?v=20260613a"></script>
-    <script src="supabase-config.js?v=20260613a"></script>
-    <script src="admin-auth.js?v=20260613a"></script>
-    <script src="app-data.js?v=20260613a"></script>
+    <script src="runtime-env.js?v=20260613c"></script>
+    <script src="supabase-config.js?v=20260613c"></script>
+    <script src="admin-auth.js?v=20260613c"></script>
+    <script src="app-data.js?v=20260613c"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="admin.js?v=20260613a"></script>
+    <script src="admin.js?v=20260613c"></script>
   </body>
 </html>

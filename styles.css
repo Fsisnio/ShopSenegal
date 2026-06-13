@@ -965,6 +965,10 @@ button:focus-visible {
   white-space: pre-line;
 }
 
+.nav-link--hidden {
+  display: none !important;
+}
+
 .hidden {
   display: none;
 }
