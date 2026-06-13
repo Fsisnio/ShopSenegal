@@ -7,6 +7,52 @@ const ShopData = (() => {
     products: "shopsenegal.products"
   };
 
+  const CLIENT_SESSION_KEY = "shopsenegal.client.session";
+
+  function normalizePhone(value) {
+    return String(value ?? "")
+      .replace(/\s+/g, "")
+      .replace(/[^\d+]/g, "")
+      .replace(/^\+/, "");
+  }
+
+  function phonesMatch(a, b) {
+    const na = normalizePhone(a);
+    const nb = normalizePhone(b);
+    if (!na || !nb) return false;
+    if (na === nb) return true;
+    const tail = (digits) => (digits.length >= 9 ? digits.slice(-9) : digits);
+    return tail(na) === tail(nb);
+  }
+
+  function phoneQueryTail(phone) {
+    const norm = normalizePhone(phone);
+    return norm.length >= 9 ? norm.slice(-9) : norm;
+  }
+
+  function getClientSession() {
+    const raw = localStorage.getItem(CLIENT_SESSION_KEY);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object" || !parsed.phone) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  function setClientSession(session) {
+    if (!session?.phone) return;
+    const payload = {
+      userId: session.userId || null,
+      fullName: String(session.fullName || "").trim(),
+      phone: normalizePhone(session.phone) || String(session.phone).trim(),
+      address: String(session.address || "").trim()
+    };
+    localStorage.setItem(CLIENT_SESSION_KEY, JSON.stringify(payload));
+  }
+
   const defaultDrivers = [
     {
       id: "d1",
@@ -359,6 +405,30 @@ const ShopData = (() => {
     return read(storageKeys.orders, []);
   }
 
+  async function getClientOrders() {
+    const session = getClientSession();
+    if (!session?.phone) return [];
+
+    const client = getSupabaseClient();
+    if (client) {
+      const tail = phoneQueryTail(session.phone);
+      let query = client.from("orders").select("*").order("created_at", { ascending: false });
+      if (tail.length >= 7) {
+        query = query.ilike("telephone", `%${tail}`);
+      }
+      const { data, error } = await query;
+      if (!error && Array.isArray(data)) {
+        return data
+          .map(fromOrderDb)
+          .filter((order) => phonesMatch(order.telephone, session.phone));
+      }
+    }
+
+    return read(storageKeys.orders, [])
+      .filter((order) => phonesMatch(order.telephone, session.phone))
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }
+
   /**
    * Persiste une commande. Retour objet :
    * - { ok: true, source: "supabase" } — ligne dans public.orders (visible admin / SQL).
@@ -633,6 +703,9 @@ const ShopData = (() => {
     getDrivers,
     getPlaces,
     getOrders,
+    getClientOrders,
+    getClientSession,
+    setClientSession,
     getUsers,
     getProducts,
     registerUser,

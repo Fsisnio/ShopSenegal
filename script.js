@@ -378,19 +378,34 @@ function buildOrderMessage(orderPayload) {
 }
 
 async function renderHistory() {
-  const orders = await window.ShopData.getOrders();
+  const session = window.ShopData.getClientSession?.();
   orderHistory.innerHTML = "";
+
+  if (!session?.phone) {
+    orderHistory.innerHTML =
+      '<p class="muted">Passez une commande ou créez un compte pour retrouver uniquement vos commandes ici.</p>';
+    return;
+  }
+
+  const orders = await window.ShopData.getClientOrders();
   if (orders.length === 0) {
-    orderHistory.innerHTML = `<p class="muted">Aucune commande precedente.</p>`;
+    orderHistory.innerHTML = `<p class="muted">Aucune commande precedente pour votre numero.</p>`;
     return;
   }
 
   orders.slice(0, 8).forEach((order) => {
+    const dateLabel = order.createdAt
+      ? new Date(order.createdAt).toLocaleDateString("fr-FR", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        })
+      : "Commande";
     const item = document.createElement("article");
     item.className = "history-item";
     item.innerHTML = `
       <div>
-        <strong>${order.client}</strong>
+        <strong>${dateLabel}</strong>
         <p>${order.besoins.length} produit(s) — ${order.paiement} — <span class="muted">${order.paymentStatus || "Non paye"}</span></p>
       </div>
       <button type="button" class="table-btn table-btn--edit" data-repeat="${order.id}">
@@ -607,6 +622,14 @@ if (orderForm) {
         supabaseExclusive: payMethod === "paydunya"
       });
 
+      if (persisted.source !== "failed") {
+        window.ShopData.setClientSession?.({
+          fullName: orderPayload.client,
+          phone: orderPayload.telephone,
+          address: orderPayload.adresse
+        });
+      }
+
       if (payMethod === "paydunya") {
         if (persisted.source !== "supabase") {
           const errDetail =
@@ -698,7 +721,7 @@ orderHistory.addEventListener("click", async (event) => {
   const button = event.target.closest("button[data-repeat]");
   if (!button) return;
   const orderId = button.dataset.repeat;
-  const orders = await window.ShopData.getOrders();
+  const orders = await window.ShopData.getClientOrders();
   const order = orders.find((entry) => entry.id === orderId);
   if (!order) return;
 
@@ -742,11 +765,20 @@ if (!SpeechRecognition) {
   });
 }
 
+function restoreClientSessionToForm() {
+  const session = window.ShopData.getClientSession?.();
+  if (!session) return;
+  if (session.fullName) customerName.value = session.fullName;
+  if (session.phone) customerPhone.value = session.phone;
+  if (session.address) customerAddress.value = session.address;
+}
+
 async function initHomePage() {
   renderNeeds();
   renderPhotoPreview();
   applyPaymentFromURL();
   syncPaymentUIMode();
+  restoreClientSessionToForm();
   await renderHistory();
 }
 

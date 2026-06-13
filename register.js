@@ -148,5 +148,11 @@ registerForm.addEventListener("submit", async (event) => {
   }
 
   notify("success", "Inscription réussie", "");
+  window.ShopData.setClientSession?.({
+    userId: payload.id,
+    fullName: payload.fullName,
+    phone: payload.phone,
+    address: payload.address
+  });
   registerForm.reset();
 });
