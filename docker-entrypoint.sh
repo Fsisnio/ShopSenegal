@@ -15,6 +15,7 @@ payload = {
         os.environ.get("PAYDUNYA_CHECKOUT_FN_URL") or os.environ.get("PAYDUNYA_CHECKOUT_URL") or ""
     ).strip(),
     "PAYDUNYA_CHECKOUT_SECRET": (os.environ.get("PAYDUNYA_CHECKOUT_SECRET") or "").strip(),
+    "SHOPSENEGAL_PHONE_LOCAL": (os.environ.get("SHOPSENEGAL_PHONE_LOCAL") or "766226601").strip(),
 }
 
 with open("runtime-env.js", "w", encoding="utf-8") as f:

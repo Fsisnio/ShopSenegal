@@ -3,9 +3,28 @@
  * jusqu’à paiement reconnu ou timeout. Nécessite supabase-js + supabase-config.js chargés avant.
  */
 (function () {
-  const WA_DIGITS = "221766226601";
   const POLL_MS = 2200;
   const MAX_POLLS = 42;
+
+  function contactDisplay() {
+    return window.ShopContact?.display || "+221 76 622 66 01";
+  }
+
+  function contactTelUrl() {
+    return window.ShopContact?.telUrl?.() || "tel:+221766226601";
+  }
+
+  function contactWhatsappUrl(text) {
+    if (window.ShopContact?.whatsappUrl) return window.ShopContact.whatsappUrl(text);
+    const encoded = encodeURIComponent(text || "");
+    return `https://api.whatsapp.com/send?phone=221766226601&text=${encoded}`;
+  }
+
+  function contactSmsUrl(text) {
+    if (window.ShopContact?.smsUrl) return window.ShopContact.smsUrl(text);
+    const encoded = encodeURIComponent(text || "");
+    return `sms:+221766226601?body=${encoded}`;
+  }
 
   const titleEl = document.getElementById("pr-title");
   const msgEl = document.getElementById("pr-message");
@@ -42,9 +61,9 @@
   }
 
   function setLinks(row) {
-    const encoded = encodeURIComponent(buildWhatsAppBody(row));
-    if (whatsEl) whatsEl.href = `https://wa.me/${WA_DIGITS}?text=${encoded}`;
-    if (smsEl) smsEl.href = `sms:+${WA_DIGITS}?body=${encoded}`;
+    const body = buildWhatsAppBody(row);
+    if (whatsEl) whatsEl.href = contactWhatsappUrl(body);
+    if (smsEl) smsEl.href = contactSmsUrl(body);
   }
 
   function renderBasics(row) {
@@ -79,7 +98,7 @@
     if (hintEl && !hintEl.dataset.prHintDone) {
       hintEl.dataset.prHintDone = "1";
       hintEl.innerHTML =
-        "Numéro officiel : <a href=\"tel:+221766226601\">+221 76 622 66 01</a> (WhatsApp ou appel).";
+        `Numéro officiel : <a href="${contactTelUrl()}">${contactDisplay()}</a> — <a href="${contactWhatsappUrl()}" target="_blank" rel="noopener noreferrer">Ouvrir WhatsApp</a>.`;
     }
 
     setLinks(row);
@@ -205,9 +224,9 @@
     }
     const refLine = orderKey || tokenHint;
     if (refLine && whatsEl) {
-      const bodySms = encodeURIComponent(`Bonjour ShopSenegal — aide suivi Paydunya\nRéf : ${refLine}`);
-      whatsEl.href = `https://wa.me/${WA_DIGITS}?text=${bodySms}`;
-      if (smsEl) smsEl.href = `sms:+${WA_DIGITS}?body=${bodySms}`;
+      const body = `Bonjour ShopSenegal — aide suivi Paydunya\nRéf : ${refLine}`;
+      whatsEl.href = contactWhatsappUrl(body);
+      if (smsEl) smsEl.href = contactSmsUrl(body);
     }
   }
 
