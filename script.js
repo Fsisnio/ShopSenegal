@@ -63,13 +63,13 @@ function publicOrderFeedback(type, title, message, clientName) {
     return {
       title: title || "Information",
       message:
-        "Votre demande a été prise en compte. Utilisez le lien WhatsApp ci-dessous ou appelez le +221 77 354 25 51."
+        "Votre demande a été prise en compte. Utilisez le lien WhatsApp ci-dessous ou appelez le +221 76 622 66 01."
     };
   }
   return {
     title: title || "Envoi impossible",
     message:
-      "Nous n'avons pas pu finaliser l'envoi pour le moment. Vérifiez vos informations et réessayez, ou contactez-nous sur WhatsApp au +221 77 354 25 51."
+      "Nous n'avons pas pu finaliser l'envoi pour le moment. Vérifiez vos informations et réessayez, ou contactez-nous sur WhatsApp au +221 76 622 66 01."
   };
 }
 
@@ -679,8 +679,8 @@ if (orderForm) {
           );
           const messageFallback = buildOrderMessage(orderPayload);
           const encoded = encodeURIComponent(messageFallback);
-          whatsappLink.href = `https://wa.me/221773542551?text=${encoded}`;
-          smsLink.href = `sms:+221773542551?body=${encoded}`;
+          whatsappLink.href = `https://wa.me/221766226601?text=${encoded}`;
+          smsLink.href = `sms:+221766226601?body=${encoded}`;
           orderActions.classList.remove("hidden");
           await renderHistory();
           resetFormAfterOrder();
@@ -691,8 +691,8 @@ if (orderForm) {
 
       const message = buildOrderMessage(orderPayload);
       const encoded = encodeURIComponent(message);
-      whatsappLink.href = `https://wa.me/221773542551?text=${encoded}`;
-      smsLink.href = `sms:+221773542551?body=${encoded}`;
+      whatsappLink.href = `https://wa.me/221766226601?text=${encoded}`;
+      smsLink.href = `sms:+221766226601?body=${encoded}`;
       orderActions.classList.remove("hidden");
 
       if (persisted.source === "supabase") {

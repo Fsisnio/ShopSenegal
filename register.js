@@ -36,7 +36,7 @@ function publicRegisterFeedback(type, title) {
   return {
     title: title || "Inscription impossible",
     message:
-      "Nous n'avons pas pu créer votre compte. Réessayez ou contactez-nous sur WhatsApp au +221 77 354 25 51."
+      "Nous n'avons pas pu créer votre compte. Réessayez ou contactez-nous sur WhatsApp au +221 76 622 66 01."
   };
 }
 

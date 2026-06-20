@@ -3,7 +3,7 @@
  * jusqu’à paiement reconnu ou timeout. Nécessite supabase-js + supabase-config.js chargés avant.
  */
 (function () {
-  const WA_DIGITS = "221773542551";
+  const WA_DIGITS = "221766226601";
   const POLL_MS = 2200;
   const MAX_POLLS = 42;
 
@@ -79,7 +79,7 @@
     if (hintEl && !hintEl.dataset.prHintDone) {
       hintEl.dataset.prHintDone = "1";
       hintEl.innerHTML =
-        "Numéro officiel : <a href=\"tel:+221773542551\">+221 77 354 25 51</a> (WhatsApp ou appel).";
+        "Numéro officiel : <a href=\"tel:+221766226601\">+221 76 622 66 01</a> (WhatsApp ou appel).";
     }
 
     setLinks(row);
