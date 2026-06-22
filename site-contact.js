@@ -1,10 +1,10 @@
 /**
  * Numéro officiel ShopSenegal — téléphone, SMS et WhatsApp.
- * Surcharge Render : SHOPSENEGAL_PHONE_LOCAL=766226601 (9 chiffres, sans +221).
+ * Surcharge Render : SHOPSENEGAL_PHONE_LOCAL=766565967 (9 chiffres, sans +221).
  */
 (function () {
   const runtime = window.SHOPSENEGAL_RUNTIME || {};
-  const localRaw = String(runtime.SHOPSENEGAL_PHONE_LOCAL || "766226601").replace(/\D/g, "");
+  const localRaw = String(runtime.SHOPSENEGAL_PHONE_LOCAL || "766565967").replace(/\D/g, "");
   const localDigits = localRaw.length >= 9 ? localRaw.slice(-9) : localRaw;
   const countryCode = "221";
   const waDigits = `${countryCode}${localDigits}`;

@@ -7,23 +7,23 @@
   const MAX_POLLS = 42;
 
   function contactDisplay() {
-    return window.ShopContact?.display || "+221 76 622 66 01";
+    return window.ShopContact?.display || "+221 76 656 59 67";
   }
 
   function contactTelUrl() {
-    return window.ShopContact?.telUrl?.() || "tel:+221766226601";
+    return window.ShopContact?.telUrl?.() || "tel:+221766565967";
   }
 
   function contactWhatsappUrl(text) {
     if (window.ShopContact?.whatsappUrl) return window.ShopContact.whatsappUrl(text);
     const encoded = encodeURIComponent(text || "");
-    return `https://api.whatsapp.com/send?phone=221766226601&text=${encoded}`;
+    return `https://api.whatsapp.com/send?phone=221766565967&text=${encoded}`;
   }
 
   function contactSmsUrl(text) {
     if (window.ShopContact?.smsUrl) return window.ShopContact.smsUrl(text);
     const encoded = encodeURIComponent(text || "");
-    return `sms:+221766226601?body=${encoded}`;
+    return `sms:+221766565967?body=${encoded}`;
   }
 
   const titleEl = document.getElementById("pr-title");
