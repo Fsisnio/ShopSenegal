@@ -37,7 +37,7 @@ function publicRegisterFeedback(type, title) {
     title: title || "Inscription impossible",
     message:
       "Nous n'avons pas pu créer votre compte. Réessayez ou contactez-nous sur WhatsApp au " +
-        (window.ShopContact?.display || "+221 76 656 59 67") +
+        (window.ShopContact?.display || "+221 76 622 66 01") +
         "."
   };
 }

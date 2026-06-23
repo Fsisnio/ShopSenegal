@@ -64,7 +64,7 @@ function publicOrderFeedback(type, title, message, clientName) {
       title: title || "Information",
       message:
         "Votre demande a été prise en compte. Utilisez le lien WhatsApp ci-dessous ou appelez le " +
-          (window.ShopContact?.display || "+221 76 656 59 67") +
+          (window.ShopContact?.display || "+221 76 622 66 01") +
           "."
     };
   }
@@ -72,7 +72,7 @@ function publicOrderFeedback(type, title, message, clientName) {
     title: title || "Envoi impossible",
     message:
       "Nous n'avons pas pu finaliser l'envoi pour le moment. Vérifiez vos informations et réessayez, ou contactez-nous sur WhatsApp au " +
-        (window.ShopContact?.display || "+221 76 656 59 67") +
+        (window.ShopContact?.display || "+221 76 622 66 01") +
         "."
   };
 }
@@ -684,9 +684,9 @@ if (orderForm) {
           const messageFallback = buildOrderMessage(orderPayload);
           const encoded = encodeURIComponent(messageFallback);
           whatsappLink.href = window.ShopContact?.whatsappUrl?.(messageFallback) ||
-            `https://api.whatsapp.com/send?phone=221766565967&text=${encoded}`;
+            `https://api.whatsapp.com/send?phone=221766226601&text=${encoded}`;
           smsLink.href = window.ShopContact?.smsUrl?.(messageFallback) ||
-            `sms:+221766565967?body=${encoded}`;
+            `sms:+221766226601?body=${encoded}`;
           orderActions.classList.remove("hidden");
           await renderHistory();
           resetFormAfterOrder();
@@ -698,9 +698,9 @@ if (orderForm) {
       const message = buildOrderMessage(orderPayload);
       const encoded = encodeURIComponent(message);
       whatsappLink.href = window.ShopContact?.whatsappUrl?.(message) ||
-        `https://api.whatsapp.com/send?phone=221766565967&text=${encoded}`;
+        `https://api.whatsapp.com/send?phone=221766226601&text=${encoded}`;
       smsLink.href = window.ShopContact?.smsUrl?.(message) ||
-        `sms:+221766565967?body=${encoded}`;
+        `sms:+221766226601?body=${encoded}`;
       orderActions.classList.remove("hidden");
 
       if (persisted.source === "supabase") {
