@@ -693,6 +693,28 @@ const ShopData = (() => {
     return { ok: true, source: "local" };
   }
 
+  async function saveCustomerReview(review) {
+    const client = getSupabaseClient();
+    if (!client) return { ok: true, source: "local" };
+
+    const payload = {
+      id: review.id || `r-${Date.now()}`,
+      rating: review.rating,
+      comment: review.comment || "",
+      source: review.source || "visit",
+      page: review.page || null,
+      order_id: review.orderId || null,
+      client_phone: review.clientPhone || null,
+      created_at: review.createdAt || new Date().toISOString()
+    };
+
+    const { error } = await client.from("customer_reviews").insert(payload);
+    if (!error) return { ok: true, source: "supabase" };
+
+    console.warn("ShopData.saveCustomerReview:", error);
+    return { ok: false, source: "failed", error: formatSupabasePersistError(error) };
+  }
+
   ensureSeedData();
 
   function isSupabaseConfigured() {
@@ -717,6 +739,7 @@ const ShopData = (() => {
     updateOrder,
     removeOrder,
     removeUser,
+    saveCustomerReview,
     upsertProduct,
     removeProduct,
     isSupabaseConfigured

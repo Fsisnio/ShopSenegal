@@ -195,6 +195,9 @@
           if (spinnerEl) spinnerEl.classList.add("hidden");
           titleEl.textContent =
             ps === "Paye" ? "Merci pour votre paiement." : titleEl.textContent;
+          if (ps === "Paye") {
+            window.ShopReview?.promptAfterPurchase?.({ orderId: row.id });
+          }
           return;
         }
       }

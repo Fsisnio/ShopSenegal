@@ -713,6 +713,8 @@ if (orderForm) {
         notifyOrder("warn", "Commande enregistrée", "", { clientName: orderPayload.client });
       }
 
+      window.ShopReview?.promptAfterPurchase?.({ orderId: orderPayload.id });
+
       await renderHistory();
       resetFormAfterOrder();
     } finally {
