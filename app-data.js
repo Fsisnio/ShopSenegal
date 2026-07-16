@@ -895,6 +895,15 @@ const ShopData = (() => {
       if (Object.prototype.hasOwnProperty.call(patch, "estimatedTotalFcfa")) {
         updatePayload.estimated_total_fcfa = patch.estimatedTotalFcfa;
       }
+      if (Object.prototype.hasOwnProperty.call(patch, "deliveryFeeFcfa")) {
+        updatePayload.delivery_fee_fcfa = patch.deliveryFeeFcfa;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, "deliveryDiscountFcfa")) {
+        updatePayload.delivery_discount_fcfa = patch.deliveryDiscountFcfa;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, "besoins")) {
+        updatePayload.besoins = patch.besoins;
+      }
       const { error } = await client.from("orders").update(updatePayload).eq("id", orderId);
       if (!error) {
         if (patch.paymentStatus === "Paye") {

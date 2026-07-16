@@ -676,7 +676,11 @@
           <p class="muted" style="margin:0;font-size:0.78rem;">${escapeHtml(order.id)} · ${formatShortDate(order.createdAt)}</p>
         </td>
         <td>${escapeHtml(order.telephone)}</td>
-        <td>${(order.besoins || []).length} ligne(s)<br><span class="muted">${formatAmount(pricing.netPayable)}</span></td>
+        <td>${(order.besoins || []).length} ligne(s)<br><span class="muted">${formatAmount(pricing.netPayable)}</span>${
+          pricing.subtotal <= 0 && (order.besoins || []).length > 0
+            ? `<br><span class="status-pill status-pill--warn">Prix à saisir</span>`
+            : ""
+        }</td>
         <td><span class="status-pill">${escapeHtml(order.status || "Nouvelle")}</span></td>
         <td>
           <select data-order-id="${escapeHtml(order.id)}" data-type="payment-status">
@@ -729,18 +733,30 @@
     const pricing = getOrderPricingBreakdown(order);
     const productsRows = (order.besoins || [])
       .map(
-        (item) => `
+        (item, index) => `
           <tr>
             <td>${escapeHtml(item.name)}</td>
             <td>${escapeHtml(item.quantity)}</td>
             <td>${escapeHtml(item.unit || "-")}</td>
             <td>${escapeHtml(item.brand || "-")}</td>
-            <td>${formatAmount(item.amount)}</td>
+            <td>
+              <input
+                type="number"
+                class="order-line-amount"
+                data-line-index="${index}"
+                min="0"
+                step="1"
+                placeholder="PU FCFA"
+                value="${Number.isFinite(Number(item.amount)) ? Math.round(Number(item.amount)) : ""}"
+              />
+            </td>
             <td>${formatAmount(lineAmountFcfa(item))}</td>
           </tr>
         `
       )
       .join("");
+
+    const subtotalNeedsReview = pricing.subtotal <= 0 && (order.besoins || []).length > 0;
 
     orderDetailsRoot.classList.remove("muted");
     orderDetailsRoot.innerHTML = `
@@ -755,6 +771,11 @@
         <p><strong>Statut paiement :</strong> ${escapeHtml(order.paymentStatus || "Non paye")}</p>
         <p><strong>Livreur :</strong> ${escapeHtml(order.assignedDriver || "Non assigné")}</p>
         <p><strong>Date :</strong> ${formatDate(order.createdAt)}</p>
+        ${
+          subtotalNeedsReview
+            ? `<p class="admin-pricing-alert">⚠ Le client n'a pas indiqué de prix — saisissez les montants ci-dessous.</p>`
+            : ""
+        }
         <p><strong>Sous-total produits :</strong> ${formatAmount(pricing.subtotal)}</p>
         <p><strong>Livraison :</strong> ${formatAmount(pricing.deliveryFee)}${
           pricing.deliveryDiscount > 0
@@ -777,6 +798,37 @@
           order.referralRewardGranted ? "Attribuée (+300 FCFA parrain/filleul si éligible)" : "Non encore attribuée"
         }</p>
         <p><strong>Note :</strong> ${escapeHtml(order.note || "Aucune")}</p>
+        <div class="admin-order-pricing-edit card card--nested">
+          <h4>Ajuster les montants</h4>
+          <p class="muted">Prix unitaire par ligne et/ou forfait si le client n'a pas renseigné les prix.</p>
+          <div class="inline-fields">
+            <div class="field">
+              <label for="admin-order-subtotal">Sous-total produits (FCFA)</label>
+              <input
+                id="admin-order-subtotal"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Ex: 5500"
+                value="${pricing.subtotal > 0 ? pricing.subtotal : ""}"
+              />
+            </div>
+            <div class="field">
+              <label for="admin-order-delivery">Livraison (FCFA)</label>
+              <input
+                id="admin-order-delivery"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Auto si vide"
+                value="${typeof order.deliveryFeeFcfa === "number" ? order.deliveryFeeFcfa : pricing.deliveryFee}"
+              />
+            </div>
+          </div>
+          <button type="button" class="table-btn table-btn--edit" data-save-order-amounts="${escapeHtml(order.id)}">
+            Enregistrer les montants
+          </button>
+        </div>
         <div class="table-wrap">
           <table class="summary-table">
             <thead>
@@ -1080,9 +1132,65 @@
     if (selectedOrderId) await renderOrderDetails(selectedOrderId);
   }
 
+  async function saveOrderAmounts(orderId) {
+    const orders = await window.ShopData.getOrders();
+    const order = orders.find((entry) => entry.id === orderId);
+    if (!order) return;
+
+    const besoins = (order.besoins || []).map((item, index) => {
+      const input = orderDetailsRoot.querySelector(
+        `.order-line-amount[data-line-index="${index}"]`
+      );
+      if (!input) return { ...item };
+      const raw = input.value.trim();
+      if (raw === "") return { ...item, amount: null };
+      const amount = Number(raw);
+      return {
+        ...item,
+        amount: Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : null
+      };
+    });
+
+    const lineSum = besoins.reduce((sum, item) => sum + lineAmountFcfa(item), 0);
+    const subtotalInput = orderDetailsRoot.querySelector("#admin-order-subtotal");
+    const manualSubtotal = subtotalInput ? Number(subtotalInput.value) : NaN;
+    let subtotal = lineSum;
+    if (subtotal <= 0 && Number.isFinite(manualSubtotal) && manualSubtotal >= 0) {
+      subtotal = Math.round(manualSubtotal);
+    } else if (subtotal <= 0) {
+      alert("Indiquez au moins un prix unitaire ou un sous-total produits.");
+      return;
+    }
+
+    const deliveryInput = orderDetailsRoot.querySelector("#admin-order-delivery");
+    const deliveryRaw = deliveryInput?.value?.trim() ?? "";
+    const patch = {
+      besoins,
+      estimatedTotalFcfa: subtotal
+    };
+    if (deliveryRaw !== "") {
+      const deliveryFee = Number(deliveryRaw);
+      if (!Number.isFinite(deliveryFee) || deliveryFee < 0) {
+        alert("Montant livraison invalide.");
+        return;
+      }
+      patch.deliveryFeeFcfa = Math.round(deliveryFee);
+    }
+
+    await window.ShopData.updateOrder(orderId, patch);
+    await refreshAll();
+    await renderOrderDetails(orderId);
+  }
+
   // ============================================================
   // Wiring : Commandes
   // ============================================================
+  orderDetailsRoot?.addEventListener("click", async (event) => {
+    const saveBtn = event.target.closest("button[data-save-order-amounts]");
+    if (!saveBtn) return;
+    await saveOrderAmounts(saveBtn.dataset.saveOrderAmounts);
+  });
+
   adminOrders.addEventListener("click", async (event) => {
     const row = event.target.closest("tr[data-order-id]");
     const control = event.target.closest("button,select");
