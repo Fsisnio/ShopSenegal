@@ -132,7 +132,7 @@ registerForm.addEventListener("submit", async (event) => {
       notify(
         "error",
         "Inscription refusée",
-        "Ce numéro ou cet email est déjà inscrit. Utilisez un autre compte ou connectez-vous."
+        "Ce numéro ou cet email est déjà inscrit. Utilisez la page Se connecter ou d'autres coordonnées."
       );
     } else if (result.reason === "db_error") {
       if (result.message) console.warn("Inscription Supabase:", result.message);

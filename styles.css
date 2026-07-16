@@ -1183,6 +1183,15 @@ button:focus-visible {
   max-width: 640px;
 }
 
+.auth-card__switch {
+  margin: 0.75rem 0 0;
+  font-size: 0.93rem;
+}
+
+.login-status--prod-hidden {
+  display: none;
+}
+
 /* ============================================================
    Pop-ups succès / échec (inscription, commande)
    ============================================================ */

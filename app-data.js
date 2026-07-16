@@ -708,6 +708,50 @@ const ShopData = (() => {
     await grantReferralRewards(orderId);
   }
 
+  async function loginUser(phone, password) {
+    const normalizedPhone = normalizePhone(phone);
+    const pwd = String(password ?? "");
+    if (!normalizedPhone || !pwd) {
+      return { ok: false, reason: "invalid_input" };
+    }
+
+    const client = getSupabaseClient();
+    if (client) {
+      const user = await getUserByPhone(normalizedPhone);
+      if (!user) return { ok: false, reason: "not_found" };
+      if (String(user.password ?? "") !== pwd) {
+        return { ok: false, reason: "wrong_password" };
+      }
+      return {
+        ok: true,
+        user: {
+          userId: user.id,
+          fullName: user.fullName,
+          phone: user.phone,
+          address: user.address,
+          referralCode: user.referralCode || ""
+        }
+      };
+    }
+
+    const users = read(storageKeys.users, []);
+    const user = users.find((entry) => phonesMatch(entry.phone, normalizedPhone));
+    if (!user) return { ok: false, reason: "not_found" };
+    if (String(user.password ?? "") !== pwd) {
+      return { ok: false, reason: "wrong_password" };
+    }
+    return {
+      ok: true,
+      user: {
+        userId: user.id,
+        fullName: user.fullName,
+        phone: user.phone,
+        address: user.address,
+        referralCode: user.referralCode || ""
+      }
+    };
+  }
+
   async function registerUser(user) {
     const client = getSupabaseClient();
     if (client) {
@@ -984,6 +1028,7 @@ const ShopData = (() => {
     getUsers,
     getProducts,
     registerUser,
+    loginUser,
     validateReferralCode,
     getUserByPhone,
     grantReferralRewards,

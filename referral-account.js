@@ -25,8 +25,8 @@ const ShopReferralAccount = (() => {
     panel.innerHTML = `
       <p class="muted">Connectez-vous avec votre numéro de téléphone pour voir votre code parrain et votre solde.</p>
       <div class="referral-account__actions">
-        <a class="btn-link" href="register.html">Créer un compte</a>
-        <a class="btn-link btn-link--ghost" href="index.html#commande">Passer une commande</a>
+        <a class="btn-link" href="login.html">Se connecter</a>
+        <a class="btn-link btn-link--ghost" href="register.html">Créer un compte</a>
       </div>
       ${rulesHtml()}
     `;
