@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 import { orderTotalFcfaFromBesoins } from "./paydunya.ts";
-import { PRICING } from "./pricing.ts";
+import { PRICING, computeOrderGrandTotalFromStored } from "./pricing.ts";
 
 function normalizePhone(value: unknown): string {
   return String(value ?? "")
@@ -39,6 +39,81 @@ export async function isReferralCodeValidForOrder(
   if (error || !referrer) return false;
   if (phonesMatch(referrer.phone, orderPhone)) return false;
   return true;
+}
+
+export async function applyReferralCreditOnPayment(
+  admin: SupabaseClient,
+  orderId: string
+): Promise<{ ok: boolean; skipped?: boolean; reason?: string; applied?: number }> {
+  const { data: order, error: selErr } = await admin
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (selErr || !order) {
+    return { ok: false, reason: "order_not_found" };
+  }
+
+  if ((order.payment_status as string) !== "Paye") {
+    return { ok: true, skipped: true, reason: "not_paid" };
+  }
+
+  const alreadyApplied =
+    typeof order.referral_credit_applied_fcfa === "number" && order.referral_credit_applied_fcfa > 0;
+  if (alreadyApplied) {
+    return { ok: true, skipped: true, reason: "already_applied" };
+  }
+
+  const grandTotal = computeOrderGrandTotalFromStored(order);
+  if (grandTotal <= 0) {
+    return { ok: true, skipped: true, reason: "no_total" };
+  }
+
+  const phoneTail = normalizePhone(order.telephone);
+  const tail = phoneTail.length >= 9 ? phoneTail.slice(-9) : phoneTail;
+  if (tail.length < 7) {
+    return { ok: true, skipped: true, reason: "no_phone" };
+  }
+
+  const { data: userRows, error: userErr } = await admin
+    .from("users")
+    .select("id, phone, referral_credit_fcfa")
+    .ilike("phone", `%${tail}`);
+
+  if (userErr || !Array.isArray(userRows)) {
+    return { ok: false, reason: "user_lookup_failed" };
+  }
+
+  const user = userRows.find((row) => phonesMatch(row.phone, order.telephone));
+  if (!user) {
+    return { ok: true, skipped: true, reason: "no_user" };
+  }
+
+  const balance =
+    typeof user.referral_credit_fcfa === "number" ? user.referral_credit_fcfa : 0;
+  if (balance <= 0) {
+    return { ok: true, skipped: true, reason: "no_credit" };
+  }
+
+  const applied = Math.min(balance, grandTotal);
+  const newBalance = balance - applied;
+
+  const { error: userUpdateErr } = await admin
+    .from("users")
+    .update({ referral_credit_fcfa: newBalance })
+    .eq("id", user.id);
+
+  if (userUpdateErr) {
+    return { ok: false, reason: "user_update_failed" };
+  }
+
+  await admin
+    .from("orders")
+    .update({ referral_credit_applied_fcfa: applied })
+    .eq("id", orderId);
+
+  return { ok: true, applied };
 }
 
 export async function grantReferralRewards(

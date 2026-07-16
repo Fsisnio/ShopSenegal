@@ -52,3 +52,19 @@ export function computeOrderPricing(
     referralCreditAmount: referralCreditsEligible ? PRICING.CREDIT_AMOUNT : 0
   };
 }
+
+export function computeOrderGrandTotalFromStored(order: Record<string, unknown>): number {
+  const subtotal = Math.max(
+    0,
+    Math.round(
+      typeof order.estimated_total_fcfa === "number" ? order.estimated_total_fcfa : 0
+    )
+  );
+  const deliveryFeeFcfa =
+    typeof order.delivery_fee_fcfa === "number"
+      ? order.delivery_fee_fcfa
+      : computeDeliveryFee(subtotal);
+  const deliveryDiscountFcfa =
+    typeof order.delivery_discount_fcfa === "number" ? order.delivery_discount_fcfa : 0;
+  return Math.max(0, subtotal + deliveryFeeFcfa - deliveryDiscountFcfa);
+}

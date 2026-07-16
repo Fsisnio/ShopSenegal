@@ -387,8 +387,9 @@ async function initReferralBanner() {
   }
   const credit = user.referralCreditFcfa || 0;
   myReferralBanner.innerHTML =
-    `Votre code parrain : <strong>${user.referralCode}</strong> — partagez-le avec vos amis.` +
-    (credit > 0 ? ` Crédit disponible : ${formatPricingFcfa(credit)}.` : "");
+    `Code parrain : <strong>${user.referralCode}</strong> — ` +
+    `Solde : <strong>${formatPricingFcfa(credit)}</strong>. ` +
+    `<a href="parrainage.html">Mon compte parrainage</a>`;
   myReferralBanner.classList.remove("hidden");
 }
 
@@ -1002,6 +1003,7 @@ async function initHomePage() {
   restoreClientSessionToForm();
   await renderHistory();
   await initReferralBanner();
+  await window.ShopReferralAccount?.renderInto(document.getElementById("referral-account-panel"));
 }
 
 if (referralCodeInput) {

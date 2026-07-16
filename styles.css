@@ -689,6 +689,57 @@ button:focus-visible {
   font-size: 0.88rem;
 }
 
+.referral-account-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.referral-account__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.referral-account__stat {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.referral-account__stat--balance strong.referral-account__balance {
+  font-size: 1.35rem;
+  color: #047857;
+}
+
+.referral-account__label {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.referral-account__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.05em;
+  font-size: 1.15rem;
+}
+
+.referral-account__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.referral-rules {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
 .table-wrap {
   width: 100%;
   max-width: 100%;

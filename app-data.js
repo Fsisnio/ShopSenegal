@@ -346,6 +346,9 @@ const ShopData = (() => {
     if (typeof order.referralRewardGranted === "boolean") {
       row.referral_reward_granted = order.referralRewardGranted;
     }
+    if (typeof order.referralCreditAppliedFcfa === "number") {
+      row.referral_credit_applied_fcfa = Math.round(order.referralCreditAppliedFcfa);
+    }
     return row;
   }
 
@@ -413,7 +416,9 @@ const ShopData = (() => {
       deliveryFeeFcfa: typeof row.delivery_fee_fcfa === "number" ? row.delivery_fee_fcfa : null,
       deliveryDiscountFcfa:
         typeof row.delivery_discount_fcfa === "number" ? row.delivery_discount_fcfa : 0,
-      referralRewardGranted: row.referral_reward_granted === true
+      referralRewardGranted: row.referral_reward_granted === true,
+      referralCreditAppliedFcfa:
+        typeof row.referral_credit_applied_fcfa === "number" ? row.referral_credit_applied_fcfa : 0
     };
   }
 
@@ -508,9 +513,6 @@ const ShopData = (() => {
     if (client) {
       const { error } = await client.from("orders").insert(toOrderDb(order));
       if (!error) {
-        if (order.referralCodeUsed && order.paiement !== "paydunya") {
-          await grantReferralRewards(order.id);
-        }
         return { ok: true, source: "supabase" };
       }
       const errText = formatSupabasePersistError(error) || "Insertion refusée.";
@@ -651,6 +653,59 @@ const ShopData = (() => {
 
     await client.from("orders").update({ referral_reward_granted: true }).eq("id", orderId);
     return { ok: true };
+  }
+
+  async function applyReferralCreditOnPayment(orderId) {
+    const client = getSupabaseClient();
+    if (!client) return { ok: false, reason: "no_client" };
+
+    const { data: order, error: selErr } = await client
+      .from("orders")
+      .select("*")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (selErr || !order) return { ok: false, reason: "order_not_found" };
+    if ((order.payment_status || "") !== "Paye") {
+      return { ok: true, skipped: true, reason: "not_paid" };
+    }
+    if (
+      typeof order.referral_credit_applied_fcfa === "number" &&
+      order.referral_credit_applied_fcfa > 0
+    ) {
+      return { ok: true, skipped: true, reason: "already_applied" };
+    }
+
+    const grandTotal = window.ShopPricing?.computeOrderGrandTotalFromStored
+      ? window.ShopPricing.computeOrderGrandTotalFromStored(fromOrderDb(order))
+      : Math.max(0, Number(order.estimated_total_fcfa) || 0);
+    if (grandTotal <= 0) return { ok: true, skipped: true, reason: "no_total" };
+
+    const user = await getUserByPhone(order.telephone);
+    if (!user) return { ok: true, skipped: true, reason: "no_user" };
+
+    const balance = user.referralCreditFcfa || 0;
+    if (balance <= 0) return { ok: true, skipped: true, reason: "no_credit" };
+
+    const applied = Math.min(balance, grandTotal);
+    const newBalance = balance - applied;
+
+    const { error: userUpdateErr } = await client
+      .from("users")
+      .update({ referral_credit_fcfa: newBalance })
+      .eq("id", user.id);
+    if (userUpdateErr) return { ok: false, reason: "user_update_failed" };
+
+    await client
+      .from("orders")
+      .update({ referral_credit_applied_fcfa: applied })
+      .eq("id", orderId);
+
+    return { ok: true, applied };
+  }
+
+  async function handleOrderPaid(orderId) {
+    await applyReferralCreditOnPayment(orderId);
+    await grantReferralRewards(orderId);
   }
 
   async function registerUser(user) {
@@ -797,13 +852,21 @@ const ShopData = (() => {
         updatePayload.estimated_total_fcfa = patch.estimatedTotalFcfa;
       }
       const { error } = await client.from("orders").update(updatePayload).eq("id", orderId);
-      if (!error) return;
+      if (!error) {
+        if (patch.paymentStatus === "Paye") {
+          await handleOrderPaid(orderId);
+        }
+        return;
+      }
     }
 
     const orders = read(storageKeys.orders, []).map((order) =>
       order.id === orderId ? { ...order, ...patch } : order
     );
     write(storageKeys.orders, orders);
+    if (patch.paymentStatus === "Paye") {
+      await handleOrderPaid(orderId);
+    }
   }
 
   async function getProducts() {
@@ -924,6 +987,8 @@ const ShopData = (() => {
     validateReferralCode,
     getUserByPhone,
     grantReferralRewards,
+    applyReferralCreditOnPayment,
+    handleOrderPaid,
     saveOrder,
     upsertDriver,
     removeDriver,

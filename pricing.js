@@ -53,6 +53,31 @@ const ShopPricing = (() => {
     return `${Math.round(amount).toLocaleString("fr-FR")} FCFA`;
   }
 
+  function computeOrderGrandTotalFromStored(order) {
+    const subtotal = Math.max(
+      0,
+      Math.round(
+        order?.subtotalFcfa ??
+          order?.estimatedTotalFcfa ??
+          order?.estimated_total_fcfa ??
+          0
+      )
+    );
+    const deliveryFeeFcfa =
+      typeof order?.deliveryFeeFcfa === "number"
+        ? order.deliveryFeeFcfa
+        : typeof order?.delivery_fee_fcfa === "number"
+          ? order.delivery_fee_fcfa
+          : computeDeliveryFee(subtotal);
+    const deliveryDiscountFcfa =
+      typeof order?.deliveryDiscountFcfa === "number"
+        ? order.deliveryDiscountFcfa
+        : typeof order?.delivery_discount_fcfa === "number"
+          ? order.delivery_discount_fcfa
+          : 0;
+    return Math.max(0, subtotal + deliveryFeeFcfa - deliveryDiscountFcfa);
+  }
+
   return {
     THRESHOLD_CREDIT,
     THRESHOLD_DELIVERY_DISCOUNT,
@@ -61,6 +86,7 @@ const ShopPricing = (() => {
     CREDIT_AMOUNT,
     computeDeliveryFee,
     computePricing,
+    computeOrderGrandTotalFromStored,
     formatFcfa
   };
 })();

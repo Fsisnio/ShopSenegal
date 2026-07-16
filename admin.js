@@ -704,6 +704,16 @@
         <p><strong>Livreur :</strong> ${escapeHtml(order.assignedDriver || "Non assigné")}</p>
         <p><strong>Date :</strong> ${formatDate(order.createdAt)}</p>
         <p><strong>Total estimé :</strong> ${formatAmount(getOrderTotalAmount(order))}</p>
+        ${
+          order.referralCodeUsed
+            ? `<p><strong>Code parrain utilisé :</strong> ${escapeHtml(order.referralCodeUsed)}</p>`
+            : ""
+        }
+        ${
+          (order.referralCreditAppliedFcfa || 0) > 0
+            ? `<p><strong>Crédit parrainage appliqué :</strong> −${formatAmount(order.referralCreditAppliedFcfa)} FCFA</p>`
+            : ""
+        }
         <p><strong>Note :</strong> ${escapeHtml(order.note || "Aucune")}</p>
         <div class="table-wrap">
           <table class="summary-table">
