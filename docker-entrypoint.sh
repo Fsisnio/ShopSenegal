@@ -16,6 +16,19 @@ payload = {
     ).strip(),
     "PAYDUNYA_CHECKOUT_SECRET": (os.environ.get("PAYDUNYA_CHECKOUT_SECRET") or "").strip(),
     "SHOPSENEGAL_PHONE_LOCAL": (os.environ.get("SHOPSENEGAL_PHONE_LOCAL") or "766226601").strip(),
+    "SHOPSENEGAL_DELIVERY_THRESHOLD_FCFA": (
+        os.environ.get("SHOPSENEGAL_DELIVERY_THRESHOLD_FCFA") or "20000"
+    ).strip(),
+    "SHOPSENEGAL_DELIVERY_FLAT_FCFA": (
+        os.environ.get("SHOPSENEGAL_DELIVERY_FLAT_FCFA") or "1000"
+    ).strip(),
+    "SHOPSENEGAL_DELIVERY_PERCENT": (os.environ.get("SHOPSENEGAL_DELIVERY_PERCENT") or "6").strip(),
+    "SHOPSENEGAL_REFERRAL_CREDIT_THRESHOLD_FCFA": (
+        os.environ.get("SHOPSENEGAL_REFERRAL_CREDIT_THRESHOLD_FCFA") or "5500"
+    ).strip(),
+    "SHOPSENEGAL_REFERRAL_CREDIT_AMOUNT": (
+        os.environ.get("SHOPSENEGAL_REFERRAL_CREDIT_AMOUNT") or "300"
+    ).strip(),
 }
 
 with open("runtime-env.js", "w", encoding="utf-8") as f:

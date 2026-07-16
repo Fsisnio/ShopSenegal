@@ -248,11 +248,48 @@ const ShopData = (() => {
     return true;
   }
 
+  function normalizeReferralCode(value) {
+    return String(value ?? "")
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "");
+  }
+
+  function buildReferralCode(fullName, phone) {
+    const tail = normalizePhone(phone).slice(-4).padStart(4, "0");
+    const parts = String(fullName || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    const initials = parts
+      .slice(0, 2)
+      .map((word) => word[0]?.toUpperCase() || "")
+      .join("")
+      .replace(/[^A-Z]/g, "");
+    const prefix = (initials || "SS").slice(0, 3);
+    const rand = Math.random().toString(36).slice(2, 5).toUpperCase();
+    return `${prefix}${tail}${rand}`;
+  }
+
+  async function generateUniqueReferralCode(client, fullName, phone) {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const code = buildReferralCode(fullName, phone);
+      const { data, error } = await client
+        .from("users")
+        .select("id")
+        .eq("referral_code", code)
+        .limit(1);
+      if (error) throw error;
+      if (!(data || []).length) return code;
+    }
+    return `SS${Date.now().toString(36).slice(-6).toUpperCase()}`;
+  }
+
   function toUserDb(user) {
     const emailTrimmed =
       typeof user.email === "string" && user.email.trim().length > 0 ? user.email.trim() : null;
 
-    return {
+    const row = {
       id: user.id,
       full_name: user.fullName,
       phone: user.phone,
@@ -261,6 +298,11 @@ const ShopData = (() => {
       password: user.password,
       created_at: user.createdAt
     };
+    if (user.referralCode) row.referral_code = user.referralCode;
+    if (typeof user.referralCreditFcfa === "number") {
+      row.referral_credit_fcfa = Math.round(user.referralCreditFcfa);
+    }
+    return row;
   }
 
   function fromUserDb(row) {
@@ -271,12 +313,15 @@ const ShopData = (() => {
       email: row.email,
       address: row.address,
       password: row.password,
-      createdAt: row.created_at
+      createdAt: row.created_at,
+      referralCode: row.referral_code || "",
+      referralCreditFcfa:
+        typeof row.referral_credit_fcfa === "number" ? row.referral_credit_fcfa : 0
     };
   }
 
   function toOrderDb(order) {
-    return {
+    const row = {
       id: order.id,
       client: order.client,
       telephone: order.telephone,
@@ -293,6 +338,15 @@ const ShopData = (() => {
       paydunya_invoice_token: order.paydunyaInvoiceToken || null,
       estimated_total_fcfa: order.estimatedTotalFcfa ?? null
     };
+    if (order.referralCodeUsed) row.referral_code_used = order.referralCodeUsed;
+    if (typeof order.deliveryFeeFcfa === "number") row.delivery_fee_fcfa = order.deliveryFeeFcfa;
+    if (typeof order.deliveryDiscountFcfa === "number") {
+      row.delivery_discount_fcfa = order.deliveryDiscountFcfa;
+    }
+    if (typeof order.referralRewardGranted === "boolean") {
+      row.referral_reward_granted = order.referralRewardGranted;
+    }
+    return row;
   }
 
   function toProductDb(product) {
@@ -354,7 +408,12 @@ const ShopData = (() => {
       createdAt: row.created_at,
       paydunyaInvoiceToken: row.paydunya_invoice_token || "",
       estimatedTotalFcfa:
-        typeof row.estimated_total_fcfa === "number" ? row.estimated_total_fcfa : null
+        typeof row.estimated_total_fcfa === "number" ? row.estimated_total_fcfa : null,
+      referralCodeUsed: row.referral_code_used || "",
+      deliveryFeeFcfa: typeof row.delivery_fee_fcfa === "number" ? row.delivery_fee_fcfa : null,
+      deliveryDiscountFcfa:
+        typeof row.delivery_discount_fcfa === "number" ? row.delivery_discount_fcfa : 0,
+      referralRewardGranted: row.referral_reward_granted === true
     };
   }
 
@@ -449,6 +508,9 @@ const ShopData = (() => {
     if (client) {
       const { error } = await client.from("orders").insert(toOrderDb(order));
       if (!error) {
+        if (order.referralCodeUsed && order.paiement !== "paydunya") {
+          await grantReferralRewards(order.id);
+        }
         return { ok: true, source: "supabase" };
       }
       const errText = formatSupabasePersistError(error) || "Insertion refusée.";
@@ -474,6 +536,121 @@ const ShopData = (() => {
       if (!error && Array.isArray(data)) return data.map(fromUserDb);
     }
     return read(storageKeys.users, []);
+  }
+
+  async function validateReferralCode(code, options = {}) {
+    const normalized = normalizeReferralCode(code);
+    if (!normalized) {
+      return { valid: false, reason: "empty" };
+    }
+
+    const excludePhone = options.excludePhone || null;
+    const client = getSupabaseClient();
+
+    if (client) {
+      const { data, error } = await client
+        .from("users")
+        .select("id, full_name, phone, referral_code")
+        .eq("referral_code", normalized)
+        .limit(1);
+      if (error) {
+        console.warn("validateReferralCode:", error.message);
+        return { valid: false, reason: "db_error" };
+      }
+      const referrer = (data || [])[0];
+      if (!referrer) return { valid: false, reason: "not_found" };
+      if (excludePhone && phonesMatch(referrer.phone, excludePhone)) {
+        return { valid: false, reason: "self_referral" };
+      }
+      return {
+        valid: true,
+        code: normalized,
+        referrerId: referrer.id,
+        referrerName: referrer.full_name || ""
+      };
+    }
+
+    const users = read(storageKeys.users, []);
+    const referrer = users.find((entry) => normalizeReferralCode(entry.referralCode) === normalized);
+    if (!referrer) return { valid: false, reason: "not_found" };
+    if (excludePhone && phonesMatch(referrer.phone, excludePhone)) {
+      return { valid: false, reason: "self_referral" };
+    }
+    return {
+      valid: true,
+      code: normalized,
+      referrerId: referrer.id,
+      referrerName: referrer.fullName || ""
+    };
+  }
+
+  async function getUserByPhone(phone) {
+    const client = getSupabaseClient();
+    if (client) {
+      const tail = phoneQueryTail(phone);
+      let query = client.from("users").select("*");
+      if (tail.length >= 7) query = query.ilike("phone", `%${tail}`);
+      const { data, error } = await query;
+      if (!error && Array.isArray(data)) {
+        const match = data.map(fromUserDb).find((user) => phonesMatch(user.phone, phone));
+        if (match) return match;
+      }
+    }
+    return read(storageKeys.users, []).find((user) => phonesMatch(user.phone, phone)) || null;
+  }
+
+  async function grantReferralRewards(orderId) {
+    const client = getSupabaseClient();
+    if (!client) return { ok: false, reason: "no_client" };
+
+    const { data: order, error: selErr } = await client
+      .from("orders")
+      .select("*")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (selErr || !order) return { ok: false, reason: "order_not_found" };
+    if (order.referral_reward_granted === true) return { ok: true, skipped: true };
+
+    const codeUsed = normalizeReferralCode(order.referral_code_used);
+    if (!codeUsed) return { ok: true, skipped: true };
+
+    const subtotal =
+      typeof order.estimated_total_fcfa === "number"
+        ? Math.round(order.estimated_total_fcfa)
+        : 0;
+    const creditThreshold = window.ShopPricing?.THRESHOLD_CREDIT ?? 5500;
+    const creditAmount = window.ShopPricing?.CREDIT_AMOUNT ?? 300;
+    if (subtotal < creditThreshold) return { ok: true, skipped: true };
+
+    const { data: referrerRows, error: refErr } = await client
+      .from("users")
+      .select("id, phone, referral_credit_fcfa")
+      .eq("referral_code", codeUsed)
+      .limit(1);
+    if (refErr || !(referrerRows || []).length) return { ok: true, skipped: true };
+
+    const referrer = referrerRows[0];
+    if (phonesMatch(referrer.phone, order.telephone)) return { ok: true, skipped: true };
+
+    const referrerCredit =
+      (typeof referrer.referral_credit_fcfa === "number" ? referrer.referral_credit_fcfa : 0) +
+      creditAmount;
+    await client
+      .from("users")
+      .update({ referral_credit_fcfa: referrerCredit })
+      .eq("id", referrer.id);
+
+    const referee = await getUserByPhone(order.telephone);
+    if (referee && referee.id !== referrer.id) {
+      const refereeCredit = (referee.referralCreditFcfa || 0) + creditAmount;
+      await client
+        .from("users")
+        .update({ referral_credit_fcfa: refereeCredit })
+        .eq("id", referee.id);
+    }
+
+    await client.from("orders").update({ referral_reward_granted: true }).eq("id", orderId);
+    return { ok: true };
   }
 
   async function registerUser(user) {
@@ -506,8 +683,18 @@ const ShopData = (() => {
         if ((byEmail || []).length > 0) return { ok: false, reason: "exists" };
       }
 
-      const { error } = await client.from("users").insert(toUserDb({ ...user, email: emailNorm }));
-      if (!error) return { ok: true };
+      let referralCode;
+      try {
+        referralCode = await generateUniqueReferralCode(client, user.fullName, user.phone);
+      } catch (genErr) {
+        console.warn("registerUser referral code:", genErr);
+        return { ok: false, reason: "db_error", message: String(genErr?.message || genErr) };
+      }
+
+      const { error } = await client.from("users").insert(
+        toUserDb({ ...user, email: emailNorm, referralCode, referralCreditFcfa: 0 })
+      );
+      if (!error) return { ok: true, referralCode };
 
       console.warn("registerUser insert:", error.message);
       const code = error.code ?? "";
@@ -533,12 +720,15 @@ const ShopData = (() => {
     });
     if (exists) return { ok: false, reason: "exists" };
 
+    const referralCode = buildReferralCode(user.fullName, user.phone);
     users.unshift({
       ...user,
-      email: emailNormFallback
+      email: emailNormFallback,
+      referralCode,
+      referralCreditFcfa: 0
     });
     write(storageKeys.users, users);
-    return { ok: true };
+    return { ok: true, referralCode };
   }
 
   async function upsertDriver(driver) {
@@ -731,6 +921,9 @@ const ShopData = (() => {
     getUsers,
     getProducts,
     registerUser,
+    validateReferralCode,
+    getUserByPhone,
+    grantReferralRewards,
     saveOrder,
     upsertDriver,
     removeDriver,

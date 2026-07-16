@@ -29,6 +29,19 @@ const orderActions = document.getElementById("order-actions");
 const whatsappLink = document.getElementById("whatsapp-link");
 const smsLink = document.getElementById("sms-link");
 const orderHistory = document.getElementById("order-history");
+const referralCodeInput = document.getElementById("referral-code");
+const referralCodeHint = document.getElementById("referral-code-hint");
+const myReferralBanner = document.getElementById("my-referral-banner");
+const checkoutPricing = document.getElementById("checkout-pricing");
+const pricingSubtotal = document.getElementById("pricing-subtotal");
+const pricingDelivery = document.getElementById("pricing-delivery");
+const pricingDiscountRow = document.getElementById("pricing-discount-row");
+const pricingDiscount = document.getElementById("pricing-discount");
+const pricingTotal = document.getElementById("pricing-total");
+const pricingReferralNote = document.getElementById("pricing-referral-note");
+
+let referralValidation = { valid: false, code: "", referrerName: "" };
+let referralValidateTimer = null;
 
 const needs = [];
 
@@ -246,6 +259,137 @@ function updateSummary() {
   const qty = needs.reduce((sum, need) => sum + Number(need.quantity), 0);
   summaryLines.textContent = `${needs.length} ligne(s)`;
   summaryQty.textContent = `${qty} article(s)`;
+  updateCheckoutPricing();
+}
+
+function formatPricingFcfa(amount) {
+  if (window.ShopPricing?.formatFcfa) return window.ShopPricing.formatFcfa(amount);
+  return `${Math.round(amount).toLocaleString("fr-FR")} FCFA`;
+}
+
+async function validateReferralCodeInput() {
+  const raw = referralCodeInput?.value?.trim() || "";
+  if (!raw) {
+    referralValidation = { valid: false, code: "", referrerName: "" };
+    if (referralCodeHint) {
+      referralCodeHint.textContent = "";
+      referralCodeHint.classList.add("hidden");
+    }
+    updateCheckoutPricing();
+    return referralValidation;
+  }
+
+  const phone = customerPhone?.value?.trim() || window.ShopData.getClientSession?.()?.phone || "";
+  const result = await window.ShopData.validateReferralCode(raw, { excludePhone: phone });
+
+  if (result.valid) {
+    referralValidation = {
+      valid: true,
+      code: result.code,
+      referrerName: result.referrerName || ""
+    };
+    if (referralCodeHint) {
+      referralCodeHint.textContent = result.referrerName
+        ? `Code valide — parrain : ${result.referrerName}`
+        : "Code parrain valide.";
+      referralCodeHint.classList.remove("hidden");
+    }
+  } else {
+    referralValidation = { valid: false, code: "", referrerName: "" };
+    if (referralCodeHint) {
+      const messages = {
+        not_found: "Code parrain introuvable.",
+        self_referral: "Vous ne pouvez pas utiliser votre propre code.",
+        db_error: "Impossible de vérifier le code pour le moment."
+      };
+      referralCodeHint.textContent = messages[result.reason] || "Code parrain invalide.";
+      referralCodeHint.classList.remove("hidden");
+    }
+  }
+
+  updateCheckoutPricing();
+  return referralValidation;
+}
+
+function scheduleReferralValidation() {
+  if (!referralCodeInput) return;
+  clearTimeout(referralValidateTimer);
+  referralValidateTimer = setTimeout(() => {
+    validateReferralCodeInput();
+  }, 350);
+}
+
+function updateCheckoutPricing() {
+  if (!checkoutPricing || !window.ShopPricing) return;
+
+  const subtotal = cartTotalFcfa(getNeeds());
+  if (subtotal <= 0) {
+    checkoutPricing.classList.add("hidden");
+    return;
+  }
+
+  const pricing = window.ShopPricing.computePricing({
+    subtotalFcfa: subtotal,
+    referralCodeValid: referralValidation.valid
+  });
+
+  checkoutPricing.classList.remove("hidden");
+  if (pricingSubtotal) pricingSubtotal.textContent = formatPricingFcfa(pricing.subtotalFcfa);
+  if (pricingDelivery) pricingDelivery.textContent = formatPricingFcfa(pricing.deliveryFeeFcfa);
+
+  if (pricing.deliveryDiscountFcfa > 0) {
+    pricingDiscountRow?.classList.remove("hidden");
+    if (pricingDiscount) {
+      pricingDiscount.textContent = `− ${formatPricingFcfa(pricing.deliveryDiscountFcfa)}`;
+    }
+  } else {
+    pricingDiscountRow?.classList.add("hidden");
+  }
+
+  if (pricingTotal) pricingTotal.textContent = formatPricingFcfa(pricing.grandTotalFcfa);
+
+  if (pricingReferralNote) {
+    const notes = [];
+    if (referralValidation.valid && pricing.referralCreditsEligible) {
+      notes.push(
+        `Parrainage : +${pricing.referralCreditAmount} FCFA de crédit pour vous et votre parrain (commande ≥ ${window.ShopPricing.THRESHOLD_CREDIT.toLocaleString("fr-FR")} FCFA).`
+      );
+    } else if (referralValidation.valid && subtotal >= window.ShopPricing.THRESHOLD_DELIVERY_DISCOUNT) {
+      notes.push("Réduction de 50 % appliquée sur la livraison grâce au code parrain.");
+    } else if (referralValidation.valid) {
+      notes.push(
+        `Crédit parrainage (+${window.ShopPricing.CREDIT_AMOUNT} FCFA) dès ${window.ShopPricing.THRESHOLD_CREDIT.toLocaleString("fr-FR")} FCFA de courses.`
+      );
+    } else if (referralCodeInput?.value?.trim()) {
+      notes.push("Saisissez un code parrain valide pour bénéficier des avantages.");
+    }
+    if (notes.length) {
+      pricingReferralNote.textContent = notes.join(" ");
+      pricingReferralNote.classList.remove("hidden");
+    } else {
+      pricingReferralNote.textContent = "";
+      pricingReferralNote.classList.add("hidden");
+    }
+  }
+}
+
+async function initReferralBanner() {
+  if (!myReferralBanner) return;
+  const session = window.ShopData.getClientSession?.();
+  if (!session?.phone) {
+    myReferralBanner.classList.add("hidden");
+    return;
+  }
+  const user = await window.ShopData.getUserByPhone(session.phone);
+  if (!user?.referralCode) {
+    myReferralBanner.classList.add("hidden");
+    return;
+  }
+  const credit = user.referralCreditFcfa || 0;
+  myReferralBanner.innerHTML =
+    `Votre code parrain : <strong>${user.referralCode}</strong> — partagez-le avec vos amis.` +
+    (credit > 0 ? ` Crédit disponible : ${formatPricingFcfa(credit)}.` : "");
+  myReferralBanner.classList.remove("hidden");
 }
 
 function renderNeeds() {
@@ -356,13 +500,38 @@ function buildOrderMessage(orderPayload) {
         Number.isFinite(item.amount) ? ` - ${item.amount.toFixed(2)} FCFA` : ""
       }`
   );
-  const estFcfa =
+  const subtotal =
     typeof orderPayload.estimatedTotalFcfa === "number" &&
     Number.isFinite(orderPayload.estimatedTotalFcfa)
       ? orderPayload.estimatedTotalFcfa
       : cartTotalFcfa(orderPayload.besoins || []);
-  const totalLine =
-    estFcfa > 0 ? `Estimation totale liste (FCFA, hors livraison): ${estFcfa}` : null;
+
+  const pricing =
+    subtotal > 0 && window.ShopPricing
+      ? window.ShopPricing.computePricing({
+          subtotalFcfa: subtotal,
+          referralCodeValid: Boolean(orderPayload.referralCodeUsed)
+        })
+      : null;
+
+  const totalLines = [];
+  if (subtotal > 0) {
+    totalLines.push(`Sous-total produits: ${subtotal} FCFA`);
+  }
+  if (pricing && pricing.deliveryFeeFcfa > 0) {
+    totalLines.push(`Livraison: ${pricing.deliveryFeeFcfa} FCFA`);
+  }
+  if (pricing && pricing.deliveryDiscountFcfa > 0) {
+    totalLines.push(`Reduction livraison (parrainage): -${pricing.deliveryDiscountFcfa} FCFA`);
+  }
+  if (pricing && pricing.grandTotalFcfa > 0) {
+    totalLines.push(`Total estime (produits + livraison): ${pricing.grandTotalFcfa} FCFA`);
+  } else if (subtotal > 0) {
+    totalLines.push(`Estimation totale liste (FCFA, hors livraison): ${subtotal}`);
+  }
+  if (orderPayload.referralCodeUsed) {
+    totalLines.push(`Code parrain: ${orderPayload.referralCodeUsed}`);
+  }
 
   const baseLines = [
     `Commande ShopSenegal`,
@@ -372,7 +541,7 @@ function buildOrderMessage(orderPayload) {
     `Adresse: ${orderPayload.adresse}`,
     `Creneau: ${orderPayload.creneau}`,
     `Paiement: ${orderPayload.paiement}`,
-    ...(totalLine ? [totalLine] : []),
+    ...totalLines,
     `Produits:`,
     ...lines,
     `Note: ${orderPayload.note || "Aucune"}`
@@ -426,6 +595,11 @@ function resetFormAfterOrder() {
   voiceTranscript.value = "";
   photoInput.value = "";
   photoPreview.innerHTML = "";
+  referralValidation = { valid: false, code: "", referrerName: "" };
+  if (referralCodeHint) {
+    referralCodeHint.textContent = "";
+    referralCodeHint.classList.add("hidden");
+  }
   renderNeeds();
 }
 
@@ -565,6 +739,29 @@ if (orderForm) {
 
     const estimatedTotalFcfa = cartTotalFcfa(cart);
     const payMethod = getPaymentValue();
+
+    const referralRaw = referralCodeInput?.value?.trim() || "";
+    if (referralRaw) {
+      const validation = await validateReferralCodeInput();
+      if (!validation.valid) {
+        notifyOrder(
+          "warn",
+          "Code parrain invalide",
+          "Corrigez ou effacez le code parrain avant d'envoyer la commande."
+        );
+        orderActions.classList.add("hidden");
+        return;
+      }
+    }
+
+    const pricing =
+      estimatedTotalFcfa > 0 && window.ShopPricing
+        ? window.ShopPricing.computePricing({
+            subtotalFcfa: estimatedTotalFcfa,
+            referralCodeValid: referralValidation.valid
+          })
+        : null;
+
     if (payMethod === "paydunya") {
       if (!paydunyaCanUseHostedCheckout()) {
         notifyOrder(
@@ -580,6 +777,16 @@ if (orderForm) {
           "warn",
           "Montant insuffisant",
           "Pour Paydunya, indiquez le prix unitaire (FCFA) de chaque produit dans la liste avant l'envoi."
+        );
+        orderActions.classList.add("hidden");
+        return;
+      }
+      const paydunyaTotal = pricing?.grandTotalFcfa ?? estimatedTotalFcfa;
+      if (paydunyaTotal < 100) {
+        notifyOrder(
+          "warn",
+          "Montant insuffisant",
+          "Le total (produits + livraison) doit être d'au moins 100 FCFA pour Paydunya."
         );
         orderActions.classList.add("hidden");
         return;
@@ -619,6 +826,10 @@ if (orderForm) {
         status: "Nouvelle",
         paymentStatus: payMethod === "paydunya" ? "En attente" : "Non paye",
         estimatedTotalFcfa: estimatedTotalFcfa > 0 ? estimatedTotalFcfa : null,
+        referralCodeUsed: referralValidation.valid ? referralValidation.code : null,
+        deliveryFeeFcfa: pricing?.deliveryFeeFcfa ?? null,
+        deliveryDiscountFcfa: pricing?.deliveryDiscountFcfa ?? 0,
+        referralRewardGranted: false,
         createdAt: new Date().toISOString()
       };
 
@@ -790,6 +1001,20 @@ async function initHomePage() {
   syncPaymentUIMode();
   restoreClientSessionToForm();
   await renderHistory();
+  await initReferralBanner();
+}
+
+if (referralCodeInput) {
+  referralCodeInput.addEventListener("input", scheduleReferralValidation);
+  referralCodeInput.addEventListener("blur", () => {
+    validateReferralCodeInput();
+  });
+}
+
+if (customerPhone) {
+  customerPhone.addEventListener("blur", () => {
+    if (referralCodeInput?.value?.trim()) validateReferralCodeInput();
+  });
 }
 
 initHomePage();

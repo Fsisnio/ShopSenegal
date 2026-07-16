@@ -639,6 +639,56 @@ button:focus-visible {
   font-weight: 700;
 }
 
+.referral-banner {
+  background: #ecfdf3;
+  border: 1px solid #9bd3b4;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.93rem;
+}
+
+.referral-banner strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.04em;
+}
+
+.referral-code-hint {
+  margin-top: 0.35rem;
+}
+
+.checkout-pricing {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.checkout-pricing__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: 0.93rem;
+}
+
+.checkout-pricing__row--discount strong {
+  color: #047857;
+}
+
+.checkout-pricing__row--total {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.55rem;
+  margin-top: 0.15rem;
+  font-weight: 700;
+}
+
+.checkout-pricing__note {
+  margin: 0.15rem 0 0;
+  font-size: 0.88rem;
+}
+
 .table-wrap {
   width: 100%;
   max-width: 100%;

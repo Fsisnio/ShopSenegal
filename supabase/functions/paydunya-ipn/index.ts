@@ -5,6 +5,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 import { paydunyaConfirmInvoice } from "../_shared/paydunya.ts";
+import { grantReferralRewards } from "../_shared/referral.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -134,8 +135,19 @@ Deno.serve(async (req) => {
       };
       if (orderIdFromCustom) {
         await admin.from("orders").update(updateRow).eq("id", orderIdFromCustom);
+        if (paymentStatus === "Paye") {
+          await grantReferralRewards(admin, orderIdFromCustom);
+        }
       } else {
+        const { data: matchedOrders } = await admin
+          .from("orders")
+          .select("id")
+          .eq("paydunya_invoice_token", invoiceToken)
+          .limit(1);
         await admin.from("orders").update(updateRow).eq("paydunya_invoice_token", invoiceToken);
+        if (paymentStatus === "Paye" && matchedOrders?.[0]?.id) {
+          await grantReferralRewards(admin, matchedOrders[0].id);
+        }
       }
     }
 

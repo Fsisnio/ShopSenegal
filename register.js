@@ -45,6 +45,8 @@ function publicRegisterFeedback(type, title) {
 function notify(type, title, message) {
   const prod = isPublicProduction();
   const pub = prod ? publicRegisterFeedback(type, title) : { title, message };
+  const display =
+    prod && type === "success" && message ? { title: pub.title, message } : pub;
 
   if (registerStatus) {
     if (prod) {
@@ -57,9 +59,9 @@ function notify(type, title, message) {
   }
 
   if (!window.ShopFeedback) return;
-  if (type === "success") window.ShopFeedback.success(pub.title, pub.message);
-  else if (type === "error") window.ShopFeedback.error(pub.title, pub.message);
-  else window.ShopFeedback.warn(pub.title, pub.message);
+  if (type === "success") window.ShopFeedback.success(display.title, display.message);
+  else if (type === "error") window.ShopFeedback.error(display.title, display.message);
+  else window.ShopFeedback.warn(display.title, display.message);
 }
 
 function normalizePhone(value) {
@@ -149,7 +151,13 @@ registerForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  notify("success", "Inscription réussie", "");
+  notify(
+    "success",
+    "Inscription réussie",
+    result.referralCode
+      ? `Votre code parrain personnel : ${result.referralCode}. Partagez-le avec vos amis pour gagner des crédits.`
+      : "Votre compte est créé. Vous pouvez maintenant passer commande depuis l'accueil ShopSenegal."
+  );
   window.ShopData.setClientSession?.({
     userId: payload.id,
     fullName: payload.fullName,

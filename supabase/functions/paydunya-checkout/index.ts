@@ -15,6 +15,8 @@ import {
   orderTotalFcfaFromBesoins,
   paydunyaCreateCheckoutInvoice
 } from "../_shared/paydunya.ts";
+import { computeOrderPricing } from "../_shared/pricing.ts";
+import { isReferralCodeValidForOrder } from "../_shared/referral.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -130,7 +132,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    const total = orderTotalFcfaFromBesoins(row.besoins);
+    const subtotal = orderTotalFcfaFromBesoins(row.besoins);
+    const referralCodeUsed =
+      typeof row.referral_code_used === "string" ? row.referral_code_used.trim() : "";
+    const referralCodeValid = referralCodeUsed
+      ? await isReferralCodeValidForOrder(admin, referralCodeUsed, row.telephone)
+      : false;
+    const pricing = computeOrderPricing(subtotal, referralCodeValid);
+    const total = pricing.grandTotalFcfa;
+
     if (!Number.isFinite(total) || total < 100) {
       return new Response(
         JSON.stringify({
@@ -157,6 +167,27 @@ Deno.serve(async (req) => {
         description: String(item.brand || "")
       };
     });
+
+    let itemIndex = besoinsArr.length;
+    if (pricing.deliveryNetFcfa > 0) {
+      invoiceItems[`item_${itemIndex}`] = {
+        name: "Livraison",
+        quantity: 1,
+        unit_price: String(pricing.deliveryNetFcfa),
+        total_price: String(pricing.deliveryNetFcfa),
+        description:
+          pricing.deliveryDiscountFcfa > 0
+            ? `Frais ${pricing.deliveryFeeFcfa} FCFA, reduction parrainage -${pricing.deliveryDiscountFcfa}`
+            : ""
+      };
+      itemIndex += 1;
+    }
+
+    await admin.from("orders").update({
+      delivery_fee_fcfa: pricing.deliveryFeeFcfa,
+      delivery_discount_fcfa: pricing.deliveryDiscountFcfa,
+      estimated_total_fcfa: subtotal
+    }).eq("id", orderId);
 
     const payload: Record<string, unknown> = {
       invoice: {
@@ -218,7 +249,7 @@ Deno.serve(async (req) => {
 
     await admin.from("orders").update({
       paydunya_invoice_token: invToken,
-      estimated_total_fcfa: total
+      estimated_total_fcfa: subtotal
     }).eq("id", orderId);
 
     return new Response(

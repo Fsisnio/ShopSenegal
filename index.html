@@ -366,6 +366,41 @@
             le tableau du dessus pour calculer la facture. Le flux redirige vers la page officielle
             Paydunya. Voir <a href="PAYDUNYA.md">PAYDUNYA.md</a> pour deployer Supabase Functions.
           </p>
+
+          <div id="my-referral-banner" class="referral-banner hidden" aria-live="polite"></div>
+
+          <div class="field">
+            <label for="referral-code">Code parrain (optionnel)</label>
+            <input
+              id="referral-code"
+              type="text"
+              placeholder="Ex: FN1234ABC"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <p id="referral-code-hint" class="muted referral-code-hint hidden"></p>
+          </div>
+
+          <div id="checkout-pricing" class="checkout-pricing hidden" aria-live="polite">
+            <div class="checkout-pricing__row">
+              <span>Sous-total produits</span>
+              <strong id="pricing-subtotal">—</strong>
+            </div>
+            <div class="checkout-pricing__row">
+              <span>Livraison</span>
+              <strong id="pricing-delivery">—</strong>
+            </div>
+            <div id="pricing-discount-row" class="checkout-pricing__row checkout-pricing__row--discount hidden">
+              <span>Réduction livraison (parrainage)</span>
+              <strong id="pricing-discount">—</strong>
+            </div>
+            <div class="checkout-pricing__row checkout-pricing__row--total">
+              <span>Total estimé</span>
+              <strong id="pricing-total">—</strong>
+            </div>
+            <p id="pricing-referral-note" class="muted checkout-pricing__note hidden"></p>
+          </div>
+
           <label for="customer-note">Note complementaire (optionnel)</label>
           <textarea
             id="customer-note"
@@ -425,10 +460,11 @@
     <script src="site-contact.js?v=20260620c"></script>
     <script src="supabase-config.js?v=20260523i"></script>
     <script src="paydunya-config.js?v=20260523i"></script>
-    <script src="app-data.js?v=20260706a"></script>
+    <script src="app-data.js?v=20260716a"></script>
+    <script src="pricing.js?v=20260716a"></script>
     <script src="ui-feedback.js?v=20260523i"></script>
     <script src="customer-review.js?v=20260706a"></script>
-    <script src="script.js?v=20260706a"></script>
+    <script src="script.js?v=20260716a"></script>
 
   </body>
 </html>
