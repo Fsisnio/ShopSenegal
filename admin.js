@@ -230,11 +230,60 @@
     return Math.round(qty * price);
   }
 
-  function getOrderTotalAmount(order) {
-    if (typeof order.estimatedTotalFcfa === "number" && order.estimatedTotalFcfa > 0) {
+  function getOrderSubtotalFcfa(order) {
+    if (typeof order.estimatedTotalFcfa === "number" && order.estimatedTotalFcfa >= 0) {
       return order.estimatedTotalFcfa;
     }
     return (order.besoins || []).reduce((sum, item) => sum + lineAmountFcfa(item), 0);
+  }
+
+  function getOrderPricingBreakdown(order) {
+    const subtotal = getOrderSubtotalFcfa(order);
+    const referralCodeValid = Boolean(order.referralCodeUsed);
+    let deliveryFee =
+      typeof order.deliveryFeeFcfa === "number" ? order.deliveryFeeFcfa : null;
+    let deliveryDiscount =
+      typeof order.deliveryDiscountFcfa === "number" ? order.deliveryDiscountFcfa : 0;
+
+    if (deliveryFee === null && window.ShopPricing?.computePricing) {
+      const pricing = window.ShopPricing.computePricing({
+        subtotalFcfa: subtotal,
+        referralCodeValid
+      });
+      deliveryFee = pricing.deliveryFeeFcfa;
+      if (!order.deliveryDiscountFcfa && referralCodeValid) {
+        deliveryDiscount = pricing.deliveryDiscountFcfa;
+      }
+    } else if (deliveryFee === null) {
+      deliveryFee = 0;
+    }
+
+    const creditApplied = order.referralCreditAppliedFcfa || 0;
+    const grandBeforeCredit = Math.max(0, subtotal + deliveryFee - deliveryDiscount);
+    const netPayable = Math.max(0, grandBeforeCredit - creditApplied);
+
+    return {
+      subtotal,
+      deliveryFee,
+      deliveryDiscount,
+      creditApplied,
+      grandBeforeCredit,
+      netPayable
+    };
+  }
+
+  function getOrderTotalAmount(order) {
+    return getOrderPricingBreakdown(order).netPayable;
+  }
+
+  function orderReferralSummary(order) {
+    const parts = [];
+    if (order.referralCodeUsed) parts.push(`Code ${order.referralCodeUsed}`);
+    if ((order.referralCreditAppliedFcfa || 0) > 0) {
+      parts.push(`−${order.referralCreditAppliedFcfa} crédit`);
+    }
+    if (order.referralRewardGranted) parts.push("Récompense OK");
+    return parts.length ? parts.join(" · ") : "—";
   }
 
   function buildSegmentation(orders, key) {
@@ -603,11 +652,12 @@
     }
 
     if (orders.length === 0) {
-      adminOrders.innerHTML = `<tr><td colspan="7" class="muted">Aucune commande pour ce filtre.</td></tr>`;
+      adminOrders.innerHTML = `<tr><td colspan="8" class="muted">Aucune commande pour ce filtre.</td></tr>`;
       return;
     }
 
     orders.forEach((order) => {
+      const pricing = getOrderPricingBreakdown(order);
       const row = document.createElement("tr");
       row.dataset.orderId = order.id;
       row.className = selectedOrderId === order.id ? "order-row order-row--selected" : "order-row";
@@ -626,7 +676,7 @@
           <p class="muted" style="margin:0;font-size:0.78rem;">${escapeHtml(order.id)} · ${formatShortDate(order.createdAt)}</p>
         </td>
         <td>${escapeHtml(order.telephone)}</td>
-        <td>${(order.besoins || []).length} ligne(s)<br><span class="muted">${formatAmount(getOrderTotalAmount(order))}</span></td>
+        <td>${(order.besoins || []).length} ligne(s)<br><span class="muted">${formatAmount(pricing.netPayable)}</span></td>
         <td><span class="status-pill">${escapeHtml(order.status || "Nouvelle")}</span></td>
         <td>
           <select data-order-id="${escapeHtml(order.id)}" data-type="payment-status">
@@ -639,6 +689,7 @@
           </select>
           <p class="muted" style="margin:0.2rem 0 0;font-size:0.72rem;">${escapeHtml(order.paiement || "-")}</p>
         </td>
+        <td class="muted" style="font-size:0.78rem;">${escapeHtml(orderReferralSummary(order))}</td>
         <td>
           <select data-order-id="${escapeHtml(order.id)}" data-type="driver">
             <option value="">Non assigné</option>
@@ -675,6 +726,7 @@
     }
 
     selectedOrderId = orderId;
+    const pricing = getOrderPricingBreakdown(order);
     const productsRows = (order.besoins || [])
       .map(
         (item) => `
@@ -703,17 +755,27 @@
         <p><strong>Statut paiement :</strong> ${escapeHtml(order.paymentStatus || "Non paye")}</p>
         <p><strong>Livreur :</strong> ${escapeHtml(order.assignedDriver || "Non assigné")}</p>
         <p><strong>Date :</strong> ${formatDate(order.createdAt)}</p>
-        <p><strong>Total estimé :</strong> ${formatAmount(getOrderTotalAmount(order))}</p>
+        <p><strong>Sous-total produits :</strong> ${formatAmount(pricing.subtotal)}</p>
+        <p><strong>Livraison :</strong> ${formatAmount(pricing.deliveryFee)}${
+          pricing.deliveryDiscount > 0
+            ? ` <span class="muted">(−${formatAmount(pricing.deliveryDiscount)} parrainage)</span>`
+            : ""
+        }</p>
+        <p><strong>Total avant crédit :</strong> ${formatAmount(pricing.grandBeforeCredit)}</p>
+        ${
+          pricing.creditApplied > 0
+            ? `<p><strong>Crédit parrainage appliqué :</strong> −${formatAmount(pricing.creditApplied)}</p>`
+            : ""
+        }
+        <p><strong>Net à payer :</strong> ${formatAmount(pricing.netPayable)}</p>
         ${
           order.referralCodeUsed
             ? `<p><strong>Code parrain utilisé :</strong> ${escapeHtml(order.referralCodeUsed)}</p>`
             : ""
         }
-        ${
-          (order.referralCreditAppliedFcfa || 0) > 0
-            ? `<p><strong>Crédit parrainage appliqué :</strong> −${formatAmount(order.referralCreditAppliedFcfa)} FCFA</p>`
-            : ""
-        }
+        <p><strong>Récompense parrainage :</strong> ${
+          order.referralRewardGranted ? "Attribuée (+300 FCFA parrain/filleul si éligible)" : "Non encore attribuée"
+        }</p>
         <p><strong>Note :</strong> ${escapeHtml(order.note || "Aucune")}</p>
         <div class="table-wrap">
           <table class="summary-table">
@@ -821,7 +883,7 @@
     const query = (usersFilter?.value || "").trim().toLowerCase();
     const filtered = query
       ? users.filter((u) =>
-          [u.fullName, u.phone, u.email, u.address]
+          [u.fullName, u.phone, u.email, u.address, u.referralCode]
             .filter(Boolean)
             .join(" ")
             .toLowerCase()
@@ -846,6 +908,10 @@
         <div>
           <strong>${escapeHtml(user.fullName)}</strong>
           <p>${escapeHtml(user.phone)}${user.email ? ` · ${escapeHtml(user.email)}` : ""}</p>
+          <p class="muted" style="margin:0.2rem 0 0;font-size:0.82rem;">
+            ${user.referralCode ? `Code parrain : ${escapeHtml(user.referralCode)} · ` : ""}
+            Crédit : ${formatAmount(user.referralCreditFcfa || 0)}
+          </p>
         </div>
         <span class="muted">${formatShortDate(user.createdAt)}</span>
       `;
@@ -903,8 +969,10 @@
       <p><strong>Téléphone :</strong> ${escapeHtml(user.phone || "-")}</p>
       <p><strong>Email :</strong> ${escapeHtml(user.email || "-")}</p>
       <p><strong>Adresse :</strong> ${escapeHtml(user.address || "-")}</p>
+      <p><strong>Code parrain :</strong> ${escapeHtml(user.referralCode || "—")}</p>
+      <p><strong>Solde crédit parrainage :</strong> ${formatAmount(user.referralCreditFcfa || 0)}</p>
       <p><strong>Inscription :</strong> ${formatDate(user.createdAt)}</p>
-      <p><strong>Commandes :</strong> ${userOrders.length} — Payé cumulé : ${formatAmount(totalPaid)}</p>
+      <p><strong>Commandes :</strong> ${userOrders.length} — Payé cumulé (net) : ${formatAmount(totalPaid)}</p>
       ${ordersList}
     `;
     userModal.classList.remove("hidden");
@@ -1296,21 +1364,30 @@
       const orders = await getFilteredOrders();
       downloadCsv(
         `shopsenegal-commandes-${new Date().toISOString().slice(0, 10)}.csv`,
-        orders.map((o) => ({
-          id: o.id,
-          date: o.createdAt,
-          client: o.client,
-          telephone: o.telephone,
-          adresse: o.adresse,
-          creneau: o.creneau,
-          paiement: o.paiement,
-          paymentStatus: o.paymentStatus,
-          status: o.status,
-          assignedDriver: o.assignedDriver,
-          lignes: (o.besoins || []).length,
-          totalFcfa: getOrderTotalAmount(o),
-          note: o.note
-        }))
+        orders.map((o) => {
+          const pricing = getOrderPricingBreakdown(o);
+          return {
+            id: o.id,
+            date: o.createdAt,
+            client: o.client,
+            telephone: o.telephone,
+            adresse: o.adresse,
+            creneau: o.creneau,
+            paiement: o.paiement,
+            paymentStatus: o.paymentStatus,
+            status: o.status,
+            assignedDriver: o.assignedDriver,
+            lignes: (o.besoins || []).length,
+            subtotalFcfa: pricing.subtotal,
+            deliveryFeeFcfa: pricing.deliveryFee,
+            deliveryDiscountFcfa: pricing.deliveryDiscount,
+            referralCodeUsed: o.referralCodeUsed || "",
+            referralCreditAppliedFcfa: pricing.creditApplied,
+            referralRewardGranted: o.referralRewardGranted ? "oui" : "non",
+            totalFcfa: pricing.netPayable,
+            note: o.note
+          };
+        })
       );
     } else if (kind === "users") {
       const users = await window.ShopData.getUsers();
@@ -1322,6 +1399,8 @@
           phone: u.phone,
           email: u.email,
           address: u.address,
+          referralCode: u.referralCode || "",
+          referralCreditFcfa: u.referralCreditFcfa || 0,
           createdAt: u.createdAt
         }))
       );
