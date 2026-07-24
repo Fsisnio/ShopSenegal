@@ -14,6 +14,10 @@ const ocrStatus = document.getElementById("ocr-status");
 const voiceButton = document.getElementById("voice-button");
 const voiceTranscript = document.getElementById("voice-transcript");
 const voiceApplyButton = document.getElementById("voice-apply-button");
+const orderListPanel = document.getElementById("order-list-panel");
+const stepCreateList = document.getElementById("step-create-list");
+const stepVerifyOrder = document.getElementById("step-verify-order");
+const commandeSection = document.getElementById("commande");
 const voiceStatus = document.getElementById("voice-status");
 const orderForm = document.getElementById("order-form");
 const customerName = document.getElementById("customer-name");
@@ -191,9 +195,9 @@ function updateOrderSubmitLabel() {
   if (pay === "paydunya") {
     sendOrderButton.textContent = "Continuer vers le paiement sécurisé";
   } else if (pay === "a_la_livraison") {
-    sendOrderButton.textContent = "Envoyer ma commande (paiement au livreur)";
+    sendOrderButton.textContent = "Valider ma commande (paiement au livreur)";
   } else {
-    sendOrderButton.textContent = "Envoyer ma commande";
+    sendOrderButton.textContent = "Valider ma commande";
   }
 }
 
@@ -394,6 +398,7 @@ async function initReferralBanner() {
 }
 
 function renderNeeds() {
+  if (!needsList) return;
   needsList.innerHTML = "";
   needs.forEach((need, index) => {
     const tr = document.createElement("tr");
@@ -411,6 +416,77 @@ function renderNeeds() {
     needsList.appendChild(tr);
   });
   updateSummary();
+}
+
+function applyTranscriptToNeeds() {
+  const transcriptText = voiceTranscript?.value?.trim() || "";
+  if (!transcriptText) return 0;
+
+  const lines = transcriptText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  let addedCount = 0;
+  lines.forEach((line) => {
+    const parsed = parseVoiceLine(line);
+    if (parsed && addNeed(parsed)) addedCount += 1;
+  });
+
+  if (addedCount > 0 && voiceTranscript) voiceTranscript.value = "";
+  return addedCount;
+}
+
+function ensureCartFromList() {
+  if (needs.length > 0) return true;
+
+  const transcriptText = voiceTranscript?.value?.trim() || "";
+  if (!transcriptText) return false;
+
+  const structuredAdded = applyTranscriptToNeeds();
+  if (structuredAdded > 0 || needs.length > 0) return true;
+
+  transcriptText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      needs.push({
+        name: line,
+        quantity: 1,
+        unit: "piece",
+        brand: "",
+        amount: null
+      });
+    });
+
+  if (needs.length > 0) {
+    if (voiceTranscript) voiceTranscript.value = "";
+    renderNeeds();
+    return true;
+  }
+
+  return false;
+}
+
+function openOrderListPanel() {
+  if (!orderListPanel) return;
+  orderListPanel.classList.remove("hidden");
+  orderListPanel.removeAttribute("aria-hidden");
+  orderListPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  setTimeout(() => voiceTranscript?.focus(), 350);
+}
+
+function scrollToCommandeSection() {
+  if (!commandeSection) return;
+  commandeSection.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function redirectToWhatsApp(message) {
+  const waUrl =
+    window.ShopContact?.whatsappUrl?.(message) ||
+    `https://api.whatsapp.com/send?phone=221766226601&text=${encodeURIComponent(message)}`;
+  window.location.assign(waUrl);
 }
 
 function addNeed({ name, quantity, unit = "piece", brand = "", amount = "" }) {
@@ -686,58 +762,36 @@ if (orderForm) {
 
 if (voiceApplyButton) {
   voiceApplyButton.addEventListener("click", () => {
-    const transcriptText = voiceTranscript.value.trim();
-    if (!transcriptText) {
-      voiceStatus.textContent = "Aucune transcription a valider.";
-      return;
-    }
-
-    const lines = transcriptText
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    let addedCount = 0;
-    lines.forEach((line) => {
-      const parsed = parseVoiceLine(line);
-      if (!parsed) return;
-      if (addNeed(parsed)) addedCount += 1;
-    });
-
+    const addedCount = applyTranscriptToNeeds();
     if (addedCount === 0) {
-      voiceStatus.textContent = "Format non reconnu. Exemple: tomates, 3, boite, roma";
+      voiceStatus.textContent = voiceTranscript?.value?.trim()
+        ? "Format non reconnu. Exemple: tomates, 3, boite, roma"
+        : "Aucune transcription a valider.";
       return;
     }
-
-    voiceTranscript.value = "";
     voiceStatus.textContent = `${addedCount} produit(s) ajoute(s) depuis la transcription.`;
   });
 }
+
+stepCreateList?.addEventListener("click", openOrderListPanel);
+stepVerifyOrder?.addEventListener("click", scrollToCommandeSection);
 
 if (orderForm) {
   orderForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     orderActions.classList.add("hidden");
 
-    if (voiceTranscript.value.trim()) {
+    if (!ensureCartFromList()) {
       notifyOrder(
         "warn",
-        "Transcription en attente",
-        "Validez d'abord la transcription vocale avant d'envoyer votre commande."
+        "Liste vide",
+        "Cliquez sur « Créez votre liste », saisissez ou dictez vos produits, puis validez votre commande."
       );
+      openOrderListPanel();
       return;
     }
 
     const cart = getNeeds();
-    if (cart.length === 0) {
-      notifyOrder(
-        "warn",
-        "Panier vide",
-        "Ajoutez au moins un produit à votre liste avant d'envoyer la commande."
-      );
-      return;
-    }
-
     const estimatedTotalFcfa = cartTotalFcfa(cart);
     const payMethod = getPaymentValue();
 
@@ -913,22 +967,27 @@ if (orderForm) {
         `https://api.whatsapp.com/send?phone=221766226601&text=${encoded}`;
       smsLink.href = window.ShopContact?.smsUrl?.(message) ||
         `sms:+221766226601?body=${encoded}`;
-      orderActions.classList.remove("hidden");
 
       if (persisted.source === "supabase") {
-        notifyOrder("success", "Commande envoyée", "", { clientName: orderPayload.client });
+        notifyOrder("success", "Commande envoyée", "Redirection vers WhatsApp…", {
+          clientName: orderPayload.client
+        });
       } else if (persisted.source === "local_fallback") {
-        notifyOrder("warn", "Commande enregistrée", persisted.error || "", {
+        notifyOrder("warn", "Commande enregistrée", persisted.error || "Redirection vers WhatsApp…", {
           clientName: orderPayload.client
         });
       } else {
-        notifyOrder("warn", "Commande enregistrée", "", { clientName: orderPayload.client });
+        notifyOrder("warn", "Commande enregistrée", "Redirection vers WhatsApp…", {
+          clientName: orderPayload.client
+        });
       }
 
       window.ShopReview?.promptAfterPurchase?.({ orderId: orderPayload.id });
 
       await renderHistory();
       resetFormAfterOrder();
+      redirectToWhatsApp(message);
+      return;
     } finally {
       if (submitBtn && !navigatingToPaydunya) {
         submitBtn.disabled = false;
@@ -979,7 +1038,7 @@ if (!SpeechRecognition) {
     const previousText = voiceTranscript.value.trim();
     voiceTranscript.value = previousText ? `${previousText}\n${transcript}` : transcript;
     voiceStatus.textContent =
-      'Transcription recue. Verifiez, modifiez puis cliquez "Valider la transcription".';
+      'Transcription reçue. Vérifiez votre liste puis validez votre commande ci-dessous.';
   });
 
   recognition.addEventListener("error", () => {
