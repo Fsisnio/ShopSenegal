@@ -782,6 +782,25 @@ button:focus-visible {
   gap: 0.65rem;
 }
 
+.referral-account__invite {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.referral-account__invite h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--primary-dark);
+}
+
+.referral-account__invite .muted {
+  margin: 0;
+}
+
 .referral-rules {
   margin: 0;
   padding-left: 1.15rem;
