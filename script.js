@@ -195,7 +195,7 @@ function updateOrderSubmitLabel() {
   if (pay === "paydunya") {
     sendOrderButton.textContent = "Continuer vers le paiement sécurisé";
   } else if (pay === "a_la_livraison") {
-    sendOrderButton.textContent = "Valider ma commande (paiement au livreur)";
+    sendOrderButton.textContent = "Valider ma commande (paiement à la livraison)";
   } else {
     sendOrderButton.textContent = "Valider ma commande";
   }
