@@ -941,6 +941,10 @@
   color: var(--home-ivory);
 }
 
+.home-footer__col h4:not(:first-child) {
+  margin-top: 1.35rem;
+}
+
 .home-footer__col p,
 .home-footer__col a {
   display: block;

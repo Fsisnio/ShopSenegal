@@ -7,7 +7,7 @@
   const MAX_POLLS = 42;
 
   function contactDisplay() {
-    return window.ShopContact?.display || "+221 76 622 66 01";
+    return window.ShopContact?.display || "+221 766226601";
   }
 
   function contactTelUrl() {

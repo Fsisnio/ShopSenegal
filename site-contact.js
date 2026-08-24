@@ -10,8 +10,7 @@
   const waDigits = `${countryCode}${localDigits}`;
 
   function formatDisplay(digits) {
-    if (digits.length !== 9) return `+${countryCode} ${digits}`;
-    return `+${countryCode} ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
+    return `+${countryCode} ${digits}`;
   }
 
   function whatsappUrl(text) {

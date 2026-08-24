@@ -26,7 +26,7 @@ function publicLoginFeedback(type, title) {
     title: title || "Connexion impossible",
     message:
       "Nous n'avons pas pu vous connecter. Réessayez ou contactez-nous sur WhatsApp au " +
-      (window.ShopContact?.display || "+221 76 622 66 01") +
+      (window.ShopContact?.display || "+221 766226601") +
       "."
   };
 }

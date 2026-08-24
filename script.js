@@ -81,7 +81,7 @@ function publicOrderFeedback(type, title, message, clientName) {
       title: title || "Information",
       message:
         "Votre demande a été prise en compte. Utilisez le lien WhatsApp ci-dessous ou appelez le " +
-          (window.ShopContact?.display || "+221 76 622 66 01") +
+          (window.ShopContact?.display || "+221 766226601") +
           "."
     };
   }
@@ -89,7 +89,7 @@ function publicOrderFeedback(type, title, message, clientName) {
     title: title || "Envoi impossible",
     message:
       "Nous n'avons pas pu finaliser l'envoi pour le moment. Vérifiez vos informations et réessayez, ou contactez-nous sur WhatsApp au " +
-        (window.ShopContact?.display || "+221 76 622 66 01") +
+        (window.ShopContact?.display || "+221 766226601") +
         "."
   };
 }
