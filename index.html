@@ -22,8 +22,8 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260824a" />
-    <link rel="stylesheet" href="home.css?v=20260824a" />
+    <link rel="stylesheet" href="styles.css?v=20260824c" />
+    <link rel="stylesheet" href="home.css?v=20260824d" />
   </head>
   <body class="page-home">
     <div class="home-trust">
@@ -84,14 +84,14 @@
             Écrivez votre liste, on la reçoit sur WhatsApp, on va au marché pour vous, et on livre chez vous — payez à la porte.
           </p>
           <div class="home-hero__cta">
-            <a class="home-btn home-btn--primary" id="step-create-list" href="#order-list-panel">
+            <a class="home-btn home-btn--primary" id="step-create-list" href="#order-list-panel" aria-expanded="false" aria-controls="order-list-panel">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 20h9" />
                 <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
               </svg>
               Écrire ma liste
             </a>
-            <a class="home-btn home-btn--ghost" id="cta-dictate" href="#order-list-panel">
+            <a class="home-btn home-btn--ghost" id="cta-dictate" href="#order-list-panel" aria-expanded="false" aria-controls="order-list-panel">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="9" y="2" width="6" height="11" rx="3" />
                 <path d="M5 11a7 7 0 0 0 14 0" />
@@ -100,6 +100,144 @@
               Dicter ma liste
               <span class="home-badge">Nouveau</span>
             </a>
+            <a
+              class="home-btn home-btn--call"
+              data-contact-tel
+              href="tel:+221766226601"
+              aria-label="Appeler ShopSenegal au +221 76 622 66 01"
+              title="Appeler"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.44 12.44 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.44 12.44 0 002.81.7A2 2 0 0122 16.92z" />
+              </svg>
+            </a>
+          </div>
+
+          <div id="order-list-panel" class="home-composer hidden" hidden>
+            <p class="home-checkout-kicker">i. Votre liste</p>
+            <label class="home-composer__label" for="voice-transcript">Écrivez vos courses, un article par ligne</label>
+            <div class="voice-box">
+              <div class="voice-actions">
+                <button id="voice-button" type="button">Dicter une commande</button>
+              </div>
+              <textarea
+                id="voice-transcript"
+                rows="5"
+                placeholder="Exemple: riz 2 kg, tomates 3 boites, lait 1 litre..."
+              ></textarea>
+              <p id="voice-status" class="muted">Un article par ligne, puis votre numéro ci-dessous.</p>
+            </div>
+
+            <section id="commande" class="home-composer__checkout">
+              <form id="order-form" class="stack home-checkout-form">
+                <div class="home-checkout-block">
+                  <p class="home-checkout-kicker">ii. Votre numéro</p>
+                  <div class="field">
+                    <label for="customer-phone">Téléphone WhatsApp</label>
+                    <input
+                      id="customer-phone"
+                      type="tel"
+                      inputmode="tel"
+                      placeholder="Ex: +221 77 000 00 00"
+                      autocomplete="tel"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="home-checkout-block">
+                  <p class="home-checkout-kicker">iii. Code parrain et validation</p>
+                  <div class="field">
+                    <label for="referral-code">Code parrainage</label>
+                    <input
+                      id="referral-code"
+                      type="text"
+                      placeholder="Ex: FN1234ABC"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                    <p id="referral-code-hint" class="muted referral-code-hint hidden"></p>
+                  </div>
+                  <button id="send-order-button" type="submit">Valider ma commande</button>
+                  <p id="pay-submit-hint" class="muted pay-submit-hint hidden" aria-live="polite"></p>
+                </div>
+
+                <div class="hidden" aria-hidden="true">
+                  <div class="field">
+                    <label for="customer-name">Nom complet</label>
+                    <input id="customer-name" type="text" placeholder="Ex: Abdoulaye Ndiaye" />
+                  </div>
+                  <div class="field">
+                    <label for="customer-address">Adresse de livraison</label>
+                    <input id="customer-address" type="text" placeholder="Ex: Parcelles Assainies Unite 15" />
+                  </div>
+                  <div class="field">
+                    <label for="delivery-slot">Creneau de livraison</label>
+                    <select id="delivery-slot">
+                      <option value="maintenant">Le plus tot possible</option>
+                      <option value="matin">Ce matin</option>
+                      <option value="apres-midi">Cet apres-midi</option>
+                      <option value="soir">Ce soir</option>
+                    </select>
+                  </div>
+                  <div class="field payment-field-full">
+                    <div class="payment-field-label" id="payment-method-heading">
+                      Comment souhaitez-vous payer ?
+                    </div>
+                    <div
+                      id="payment-choices-primary"
+                      class="payment-choices payment-choices--primary"
+                      role="radiogroup"
+                      aria-labelledby="payment-method-heading"
+                    >
+                      <label class="payment-choice payment-choice--paydunya hidden">
+                        <input type="radio" name="payment-choice" value="paydunya" />
+                        <span class="payment-choice__badge" aria-hidden="true">Sécurisé</span>
+                        <span class="payment-choice__title">Payer en ligne maintenant</span>
+                        <span class="payment-choice__desc">Paydunya — Wave, Orange Money, carte bancaire</span>
+                      </label>
+                      <label class="payment-choice">
+                        <input type="radio" name="payment-choice" value="a_la_livraison" checked />
+                        <span class="payment-choice__title">Payer à la livraison</span>
+                        <span class="payment-choice__desc">Espèces ou mobile money avec le livreur</span>
+                      </label>
+                    </div>
+                    <div class="payment-choices payment-choices--chips" role="group" aria-label="Mobile money classique">
+                      <label class="payment-chip">
+                        <input type="radio" name="payment-choice" value="wave" />
+                        <span>Wave</span>
+                      </label>
+                      <label class="payment-chip">
+                        <input type="radio" name="payment-choice" value="orange_money" />
+                        <span>Orange Money</span>
+                      </label>
+                      <label class="payment-chip">
+                        <input type="radio" name="payment-choice" value="free_money" />
+                        <span>Free Money</span>
+                      </label>
+                    </div>
+                  </div>
+                  <p id="paydunya-pay-tip" class="muted hidden"></p>
+                  <div id="my-referral-banner" class="referral-banner hidden" aria-live="polite"></div>
+                  <div id="checkout-pricing" class="checkout-pricing hidden" aria-live="polite">
+                    <strong id="pricing-subtotal">—</strong>
+                    <strong id="pricing-delivery">—</strong>
+                    <div id="pricing-discount-row" class="hidden">
+                      <strong id="pricing-discount">—</strong>
+                    </div>
+                    <strong id="pricing-total">—</strong>
+                    <p id="pricing-referral-note" class="muted hidden"></p>
+                  </div>
+                  <label for="customer-note">Note complementaire (optionnel)</label>
+                  <textarea id="customer-note" rows="2"></textarea>
+                </div>
+              </form>
+              <p id="order-status" class="muted">Votre commande sera enregistrée puis confirmée sur WhatsApp.</p>
+              <div id="order-actions" class="order-actions hidden">
+                <a id="whatsapp-link" class="btn-link" target="_blank" rel="noreferrer">Confirmer via WhatsApp</a>
+                <a id="sms-link" class="btn-link btn-link--ghost" href="#">Confirmer via SMS</a>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -167,30 +305,30 @@
         <div class="home-steps">
           <article class="home-step">
             <span class="home-step__num">i.</span>
-            <h3>Écrivez votre liste</h3>
+            <h3>On fait la liste</h3>
             <p>
-              Tapez ce dont vous avez besoin, article par article. Ajoutez la quantité et une note si un produit peut être remplacé. (Vous pouvez aussi dicter — nouvelle fonctionnalité.)
+              Écrivez (ou dictez) ce dont vous avez besoin, article par article. Un shopper s'occupe du marché.
             </p>
           </article>
           <article class="home-step">
             <span class="home-step__num">ii.</span>
-            <h3>On confirme sur WhatsApp</h3>
+            <h3>On entre son numéro</h3>
             <p>
-              Un shopper vérifie votre liste, propose des marques et confirme le prix total avant de partir au marché.
+              Indiquez votre téléphone WhatsApp. On vous rappelle pour confirmer la liste, les prix et l'adresse.
             </p>
           </article>
           <article class="home-step">
             <span class="home-step__num">iii.</span>
-            <h3>Livraison, payez à la porte</h3>
+            <h3>On valide, avec le code parrain</h3>
             <p>
-              Espèces, Wave, Orange Money ou Free Money — au moment de la livraison, jamais avant.
+              Ajoutez un code parrainage si vous en avez un, puis envoyez. Le reste se règle à la livraison.
             </p>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="home-section home-section--warm" id="categories">
+    <section class="home-section home-section--warm hidden" id="categories" hidden aria-hidden="true">
       <div class="home-wrap">
         <div class="home-head">
           <div>
@@ -348,39 +486,7 @@
       </div>
     </section>
 
-    <section class="home-order" id="commande-wrap">
-      <div class="container">
-        <div class="home-head">
-          <div>
-            <p class="home-eyebrow">Commander</p>
-            <h2>Écrivez votre liste, <em>on s'occupe du reste.</em></h2>
-          </div>
-          <p class="home-head__note">
-            Un article par ligne. Vous pouvez aussi dicter, puis confirmer vos coordonnées ci-dessous.
-          </p>
-        </div>
-      </div>
-
-      <section
-        id="order-list-panel"
-        class="container card order-list-panel"
-      >
-        <h2>Créez votre liste</h2>
-        <p>Entrez votre liste de commandes ou dictez-la, puis validez votre commande ci-dessous.</p>
-        <div class="voice-box">
-          <div class="voice-actions">
-            <button id="voice-button" type="button">Dicter une commande</button>
-          </div>
-          <label for="voice-transcript">Entrez votre liste de commandes ici ou dictez la liste de votre commande</label>
-          <textarea
-            id="voice-transcript"
-            rows="6"
-            placeholder="Exemple: riz 2 kg, tomates 3 boites, lait 1 litre..."
-          ></textarea>
-          <p id="voice-status" class="muted">Cliquez sur « Dicter une commande » ou saisissez votre liste directement.</p>
-        </div>
-      </section>
-
+    <section class="home-order hidden" id="commande-wrap" hidden aria-hidden="true">
       <div class="container stack-lg">
         <section class="hidden" aria-hidden="true">
           <form id="need-form" class="stack">
@@ -456,165 +562,13 @@
           </div>
         </section>
 
-        <section id="commande" class="card">
-          <h2>Envoyer la commande</h2>
-          <p>Confirmez vos informations, le creneau de livraison et le paiement.</p>
-
-          <form id="order-form" class="stack">
-            <div class="inline-fields">
-              <div class="field">
-                <label for="customer-name">Nom complet</label>
-                <input
-                  id="customer-name"
-                  type="text"
-                  placeholder="Ex: Abdoulaye Ndiaye"
-                  required
-                />
-              </div>
-              <div class="field">
-                <label for="customer-phone">Telephone</label>
-                <input
-                  id="customer-phone"
-                  type="text"
-                  placeholder="Ex: +221 77 000 00 00"
-                  required
-                />
-              </div>
-              <div class="field">
-                <label for="customer-address">Adresse de livraison</label>
-                <input
-                  id="customer-address"
-                  type="text"
-                  placeholder="Ex: Parcelles Assainies Unite 15"
-                  required
-                />
-              </div>
-              <div class="field">
-                <label for="delivery-slot">Creneau de livraison</label>
-                <select id="delivery-slot">
-                  <option value="maintenant">Le plus tot possible</option>
-                  <option value="matin">Ce matin</option>
-                  <option value="apres-midi">Cet apres-midi</option>
-                  <option value="soir">Ce soir</option>
-                </select>
-              </div>
-              <div class="field payment-field-full">
-                <div class="payment-field-label" id="payment-method-heading">
-                  Comment souhaitez-vous payer ?
-                </div>
-
-                <div
-                  id="payment-choices-primary"
-                  class="payment-choices payment-choices--primary"
-                  role="radiogroup"
-                  aria-labelledby="payment-method-heading"
-                >
-                  <label class="payment-choice payment-choice--paydunya hidden">
-                    <input type="radio" name="payment-choice" value="paydunya" />
-                    <span class="payment-choice__badge" aria-hidden="true">Sécurisé</span>
-                    <span class="payment-choice__title">Payer en ligne maintenant</span>
-                    <span class="payment-choice__desc">
-                      Paydunya — Wave, Orange Money, carte bancaire
-                    </span>
-                  </label>
-                  <label class="payment-choice">
-                    <input
-                      type="radio"
-                      name="payment-choice"
-                      value="a_la_livraison"
-                      checked
-                    />
-                    <span class="payment-choice__title">Payer à la livraison</span>
-                    <span class="payment-choice__desc">Espèces ou mobile money avec le livreur</span>
-                  </label>
-                </div>
-
-                <p class="payment-choices-sep muted">Ou indiquez un opérateur classique</p>
-                <div
-                  class="payment-choices payment-choices--chips"
-                  role="group"
-                  aria-label="Mobile money classique"
-                >
-                  <label class="payment-chip">
-                    <input type="radio" name="payment-choice" value="wave" />
-                    <span>Wave</span>
-                  </label>
-                  <label class="payment-chip">
-                    <input type="radio" name="payment-choice" value="orange_money" />
-                    <span>Orange Money</span>
-                  </label>
-                  <label class="payment-chip">
-                    <input type="radio" name="payment-choice" value="free_money" />
-                    <span>Free Money</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <p id="paydunya-pay-tip" class="muted hidden">
-              Pour Paydunya, indiquez le <strong>prix unitaire</strong> (FCFA) de chaque produit dans
-              le tableau du dessus pour calculer la facture. Le flux redirige vers la page officielle
-              Paydunya. Voir <a href="PAYDUNYA.md">PAYDUNYA.md</a> pour deployer Supabase Functions.
-            </p>
-
-            <div id="my-referral-banner" class="referral-banner hidden" aria-live="polite"></div>
-
-            <div class="field">
-              <label for="referral-code">Code parrain (optionnel)</label>
-              <input
-                id="referral-code"
-                type="text"
-                placeholder="Ex: FN1234ABC"
-                autocomplete="off"
-                spellcheck="false"
-              />
-              <p id="referral-code-hint" class="muted referral-code-hint hidden"></p>
-            </div>
-
-            <div id="checkout-pricing" class="checkout-pricing hidden" aria-live="polite">
-              <div class="checkout-pricing__row">
-                <span>Sous-total produits</span>
-                <strong id="pricing-subtotal">—</strong>
-              </div>
-              <div class="checkout-pricing__row">
-                <span>Livraison</span>
-                <strong id="pricing-delivery">—</strong>
-              </div>
-              <div id="pricing-discount-row" class="checkout-pricing__row checkout-pricing__row--discount hidden">
-                <span>Réduction livraison (parrainage)</span>
-                <strong id="pricing-discount">—</strong>
-              </div>
-              <div class="checkout-pricing__row checkout-pricing__row--total">
-                <span>Total estimé</span>
-                <strong id="pricing-total">—</strong>
-              </div>
-              <p id="pricing-referral-note" class="muted checkout-pricing__note hidden"></p>
-            </div>
-
-            <label for="customer-note">Note complementaire (optionnel)</label>
-            <textarea
-              id="customer-note"
-              rows="2"
-              placeholder="Ex: Remplacer un produit si indisponible"
-            ></textarea>
-            <button id="send-order-button" type="submit">Valider ma commande</button>
-            <p id="pay-submit-hint" class="muted pay-submit-hint hidden" aria-live="polite"></p>
-          </form>
-
-          <p id="order-status" class="muted">Votre commande sera enregistrée puis confirmée sur WhatsApp.</p>
-          <div id="order-actions" class="order-actions hidden">
-            <a id="whatsapp-link" class="btn-link" target="_blank" rel="noreferrer">Confirmer via WhatsApp</a>
-            <a id="sms-link" class="btn-link btn-link--ghost" href="#">Confirmer via SMS</a>
-          </div>
-        </section>
-
-        <section id="parrainage" class="card">
+        <section id="parrainage" class="card hidden" hidden aria-hidden="true">
           <h2>Mon compte parrainage</h2>
           <p>Suivez votre solde et partagez votre code avec vos proches.</p>
           <div id="referral-account-panel" class="referral-account-panel" aria-live="polite"></div>
         </section>
 
-        <section class="card">
+        <section class="card hidden" hidden aria-hidden="true">
           <h2>Historique client</h2>
           <p>Vos commandes sont liées à votre numéro de téléphone (compte ou dernière commande).</p>
           <div id="order-history" class="history-list"></div>
@@ -680,7 +634,7 @@
     <script src="referral-account.js?v=20260724c"></script>
     <script src="ui-feedback.js?v=20260523i"></script>
     <script src="customer-review.js?v=20260706a"></script>
-    <script src="script.js?v=20260824a"></script>
+    <script src="script.js?v=20260824c"></script>
     <script src="home.js?v=20260824a"></script>
   </body>
 </html>

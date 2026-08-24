@@ -244,6 +244,25 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
+.home-btn--call {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  padding: 0;
+  border-color: var(--home-line-green);
+  color: var(--home-ivory);
+}
+
+.home-btn--call svg {
+  width: 20px;
+  height: 20px;
+}
+
+.home-btn--call:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .home-badge {
   display: inline-flex;
   align-items: center;
@@ -780,6 +799,85 @@
   box-shadow: none;
 }
 
+.home-checkout-kicker {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--home-green);
+}
+
+.home-checkout-block {
+  padding-bottom: 0.25rem;
+}
+
+.home-checkout-block + .home-checkout-block {
+  margin-top: 0.5rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--home-line);
+}
+
+.home-checkout-form > .home-checkout-block h2 {
+  margin: 0 0 0.4rem;
+}
+
+.home-composer {
+  margin-top: 1.35rem;
+  background: #fff;
+  color: var(--home-ink);
+  border-radius: 20px;
+  padding: 1.15rem 1.2rem 1.3rem;
+  text-align: left;
+}
+
+.home-composer[hidden],
+.home-composer.hidden {
+  display: none !important;
+}
+
+.home-composer__label {
+  display: block;
+  margin: 0 0 0.65rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--home-ink);
+}
+
+.home-composer .muted,
+.home-composer p,
+.home-composer label {
+  color: var(--home-muted);
+}
+
+.home-composer label {
+  color: var(--home-ink);
+}
+
+.home-composer textarea,
+.home-composer input[type="tel"],
+.home-composer input[type="text"] {
+  width: 100%;
+  color: var(--home-ink);
+  background: #fff;
+}
+
+.home-composer__checkout {
+  margin-top: 1.15rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--home-line);
+}
+
+.page-home.composer-open .home-hero__grid {
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .page-home.composer-open .home-list {
+    display: none;
+  }
+}
+
 .page-home #how,
 .page-home #categories,
 .page-home #temoignages,
@@ -1093,12 +1191,20 @@
   }
 
   .home-hero__cta {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
   }
 
-  .home-hero__cta .home-btn {
-    width: 100%;
+  .home-hero__cta .home-btn:not(.home-btn--call) {
+    width: auto;
+    flex: 1 1 auto;
+  }
+
+  .home-hero__cta .home-btn--call {
+    width: 48px;
+    min-width: 48px;
+    flex: 0 0 48px;
   }
 
   .home-list {

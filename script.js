@@ -472,15 +472,18 @@ function ensureCartFromList() {
 function openOrderListPanel(options = {}) {
   if (!orderListPanel) return;
   orderListPanel.classList.remove("hidden");
+  orderListPanel.removeAttribute("hidden");
   orderListPanel.removeAttribute("aria-hidden");
-  orderListPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.body.classList.add("composer-open");
+  document.getElementById("step-create-list")?.setAttribute("aria-expanded", "true");
+  document.getElementById("cta-dictate")?.setAttribute("aria-expanded", "true");
   setTimeout(() => {
     if (options.startVoice) {
       voiceButton?.click();
     } else {
-      voiceTranscript?.focus();
+      voiceTranscript?.focus({ preventScroll: true });
     }
-  }, 350);
+  }, 50);
 }
 
 function scrollToCommandeSection() {
@@ -805,6 +808,16 @@ if (orderForm) {
       return;
     }
 
+    if (!customerPhone?.value?.trim()) {
+      notifyOrder(
+        "warn",
+        "Numéro manquant",
+        "Indiquez votre numéro WhatsApp pour qu'on puisse confirmer la commande."
+      );
+      customerPhone?.focus();
+      return;
+    }
+
     const cart = getNeeds();
     const estimatedTotalFcfa = cartTotalFcfa(cart);
     const payMethod = getPaymentValue();
@@ -884,9 +897,9 @@ if (orderForm) {
     try {
       const orderPayload = {
         id: `o-${Date.now()}`,
-        client: customerName.value.trim(),
-        telephone: customerPhone.value.trim(),
-        adresse: customerAddress.value.trim(),
+        client: customerName?.value?.trim() || customerPhone?.value?.trim() || "",
+        telephone: customerPhone?.value?.trim() || "",
+        adresse: customerAddress?.value?.trim() || "À confirmer sur WhatsApp",
         note: customerNote.value.trim(),
         creneau: deliverySlot.value,
         paiement: payMethod,
