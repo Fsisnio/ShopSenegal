@@ -3,33 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4QFNNEJM9Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-4QFNNEJM9Q');
     </script>
 
-    <title>ShopSenegal - Commande intelligente</title>
+    <title>ShopSenegal — Courses et livraison à Thiès</title>
+    <meta
+      name="description"
+      content="Écrivez votre liste de courses, un shopper va au marché et livre à domicile à Thiès. Paiement à la livraison."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Bump ?v= when shipping JS/HTML/CSS fixes so CDN/browsers don’t keep stale bundles. -->
-    <link rel="stylesheet" href="styles.css?v=20260724c" />
+    <link rel="stylesheet" href="styles.css?v=20260824a" />
+    <link rel="stylesheet" href="home.css?v=20260824a" />
   </head>
-  <body>
-    <div class="fraud-alert">
-      <div class="fraud-alert__track">
-        <span
-          >Anti-fraude — Numéro officiel ShopSenegal : <strong data-contact-display-only>+221 76 622 66 01</strong> (appel ou
-          WhatsApp). Ne validez une commande qu’avec ce numéro.</span
-        >
+  <body class="page-home">
+    <div class="home-trust">
+      <div class="home-wrap home-trust__inner">
+        <span class="home-trust__dot" aria-hidden="true"></span>
+        <span>
+          Numéro officiel ShopSenegal —
+          <a data-contact-tel data-contact-display href="tel:+221766226601">+221 76 622 66 01</a>
+          ·
+          <a data-contact-whatsapp href="https://wa.me/221766226601" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          · N'utilisez que ce numéro
+        </span>
       </div>
     </div>
 
@@ -43,411 +49,624 @@
             width="90"
             height="56"
           />
-          <span>ShopSenegal</span>
+          <span class="brand-wordmark">Shop<span>Senegal</span></span>
         </a>
         <button
           type="button"
-          class="nav-toggle"
+          class="nav-toggle home-menu-btn"
           aria-expanded="false"
           aria-controls="primary-nav"
         >
-          <span class="nav-toggle__icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Menu</span>
+          ☰ Menu
         </button>
         <div id="primary-nav" class="top-nav__drawer" role="navigation">
           <div class="top-nav__links">
-            <a href="index.html">Accueil</a>
+            <a href="#how">Comment ça marche</a>
             <a href="products.html">Produits</a>
-            <a href="livreurs.html" class="nav-link--hidden" hidden>Livreurs</a>
-            <a href="lieux.html">Lieux d'emplette</a>
+            <a href="lieux.html">Marchés</a>
             <a href="parrainage.html">Parrainage</a>
-            <a href="login.html">Se connecter</a>
-            <a href="register.html">Inscription</a>
+            <a href="livreurs.html" class="nav-link--hidden" hidden>Livreurs</a>
+            <a href="login.html" class="home-nav-login">Se connecter</a>
           </div>
         </div>
       </div>
     </nav>
     <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 
-    <header class="hero hero--premium">
-      <div class="hero__content container">
-        <p class="hero__eyebrow">Courses & livraison à Thiès, Sénégal</p>
-        <h1>On fait les courses comme vous et pour vous.</h1>
-        <p class="hero__lead">
-          Dictée ou liste écrite, validation en un clic, commande et suivi pro comme en
-          magasin.
-        </p>
-        <div class="hero-cta">
-          <a class="btn-link" href="#commande">Commander maintenant</a>
-          <a class="btn-link btn-link--ghost" href="login.html">Se connecter</a>
-          <a class="btn-link btn-link--ghost" href="register.html">Créer un compte</a>
-          <a class="btn-link btn-link--ghost" href="lieux.html">Marchés de Thiès</a>
+    <main>
+
+    <header class="home-hero">
+      <div class="home-wrap home-hero__grid">
+        <div>
+          <p class="home-hero__eyebrow">— Thiès, Sénégal · Livraison 45 min</p>
+          <h1>On fait les courses <em class="home-accent">comme vous,</em> pour vous.</h1>
+          <p class="home-hero__lead">
+            Écrivez votre liste, on la reçoit sur WhatsApp, on va au marché pour vous, et on livre chez vous — payez à la porte.
+          </p>
+          <div class="home-hero__cta">
+            <a class="home-btn home-btn--primary" id="step-create-list" href="#order-list-panel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+              </svg>
+              Écrire ma liste
+            </a>
+            <a class="home-btn home-btn--ghost" id="cta-dictate" href="#order-list-panel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="2" width="6" height="11" rx="3" />
+                <path d="M5 11a7 7 0 0 0 14 0" />
+                <path d="M12 18v4" />
+              </svg>
+              Dicter ma liste
+              <span class="home-badge">Nouveau</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="home-list" aria-hidden="true">
+          <div class="home-list__head">
+            <p class="home-list__title">Ma liste de courses</p>
+            <span class="home-list__count" id="home-list-count">0 article</span>
+          </div>
+          <div class="home-list__items" id="home-list-items"></div>
+          <div class="home-list__input">
+            <span class="home-list__plus">+</span>
+            <span>
+              <span class="home-list__typed" id="home-list-typed"></span>
+              <span class="home-list__caret"></span>
+            </span>
+          </div>
+          <div class="home-list__foot">
+            <span class="home-list__dictate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="2" width="6" height="11" rx="3" />
+                <path d="M5 11a7 7 0 0 0 14 0" />
+                <path d="M12 18v4" />
+              </svg>
+              Ou dictez en Wolof / Français
+              <span class="home-badge home-badge--sm">Nouveau</span>
+            </span>
+            <span class="home-list__langs">FR · <span>WO</span></span>
+          </div>
         </div>
       </div>
     </header>
 
-    <section class="container trust-strip">
-      <div class="trust-item">
-        <div class="trust-item__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-            <path
-              d="M12 21s7-4.5 7-11a7 7 0 10-14 0c0 6.5 7 11 7 11z"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <circle cx="12" cy="10" r="2.5" />
-          </svg>
+    <section class="home-stats" aria-label="Chiffres clés">
+      <div class="home-wrap home-stats__grid">
+        <div>
+          <span class="home-stat__num">12+</span>
+          <span class="home-stat__label">marchés couverts à Thiès</span>
         </div>
-        <div class="trust-item__copy">
-          <strong>12+</strong>
-          <span>marchés à Thiès</span>
+        <div>
+          <span class="home-stat__num">45 min</span>
+          <span class="home-stat__label">livraison moyenne en zone proche</span>
         </div>
-      </div>
-      <div class="trust-item">
-        <div class="trust-item__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+        <div>
+          <span class="home-stat__num">2 400+</span>
+          <span class="home-stat__label">commandes livrées depuis 2025</span>
         </div>
-        <div class="trust-item__copy">
-          <strong>45 min</strong>
-          <span>délai moyen en zone proche</span>
-        </div>
-      </div>
-      <div class="trust-item">
-        <div class="trust-item__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-            <path
-              d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.44 12.44 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.44 12.44 0 002.81.7A2 2 0 0122 16.92z"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-        <div class="trust-item__copy">
-          <strong>7j/7</strong>
-          <span>support WhatsApp et téléphone</span>
+        <div>
+          <span class="home-stat__num">7j/7</span>
+          <span class="home-stat__label">support WhatsApp, 8h → 22h</span>
         </div>
       </div>
     </section>
 
-    <section class="container how-it-works">
-      <h2>Comment ça marche</h2>
-      <p class="section-lead">Créez votre liste, puis validez votre commande.</p>
-      <div class="steps">
-        <button type="button" id="step-create-list" class="step-card step-card--action step-card--primary">
-          <span class="step-card__num" aria-hidden="true">1</span>
-          <div class="step-card__inner">
-            <h3>Créez votre liste</h3>
-            <p>Cliquez pour saisir ou dicter vos produits.</p>
+    <section class="home-section home-section--ivory" id="how">
+      <div class="home-wrap">
+        <div class="home-head">
+          <div>
+            <p class="home-eyebrow">Comment ça marche</p>
+            <h2>Trois étapes, <em>rien de plus.</em></h2>
           </div>
-        </button>
-        <button type="button" id="step-verify-order" class="step-card step-card--action hidden" aria-hidden="true">
-          <span class="step-card__num" aria-hidden="true">2</span>
-          <div class="step-card__inner">
-            <h3>Vérifiez votre commande</h3>
-            <p>Renseignez vos coordonnées, le paiement et le créneau.</p>
-          </div>
-        </button>
-        <article class="step-card hidden" aria-hidden="true">
-          <span class="step-card__num" aria-hidden="true">3</span>
-          <div class="step-card__inner">
-            <h3>Recevez votre livraison</h3>
-            <p>Confirmation instantanée WhatsApp, puis livraison rapide.</p>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section
-      id="order-list-panel"
-      class="container card order-list-panel hidden"
-      aria-hidden="true"
-    >
-      <h2>Créez votre liste</h2>
-      <p>Entrez votre liste de commandes ou dictez-la, puis validez votre commande ci-dessous.</p>
-      <div class="voice-box">
-        <div class="voice-actions">
-          <button id="voice-button" type="button">Dicter une commande</button>
-        </div>
-        <label for="voice-transcript">Entrez votre liste de commandes ici ou dictez la liste de votre commande</label>
-        <textarea
-          id="voice-transcript"
-          rows="6"
-          placeholder="Exemple: riz 2 kg, tomates 3 boites, lait 1 litre..."
-        ></textarea>
-        <p id="voice-status" class="muted">Cliquez sur « Dicter une commande » ou saisissez votre liste directement.</p>
-      </div>
-    </section>
-
-    <main class="container stack-lg">
-      <section class="hidden" aria-hidden="true">
-        <form id="need-form" class="stack">
-          <div class="inline-fields">
-            <div class="field">
-              <label for="need-name">Nom du produit</label>
-              <input id="need-name" type="text" placeholder="Ex: riz" />
-            </div>
-            <div class="field">
-              <label for="need-quantity">Quantite</label>
-              <input id="need-quantity" type="number" min="1" step="1" value="1" />
-            </div>
-            <div class="field">
-              <label for="need-unit">Unite</label>
-              <select id="need-unit">
-                <option value="piece">piece</option>
-                <option value="kg">kg</option>
-                <option value="litre">litre</option>
-                <option value="paquet">paquet</option>
-                <option value="boite">boite</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="need-brand">Marque (optionnel)</label>
-              <input id="need-brand" type="text" placeholder="Ex: Royal Umbrella" />
-            </div>
-            <div class="field">
-              <label for="need-amount">Montant (optionnel)</label>
-              <input id="need-amount" type="number" min="0" step="0.01" placeholder="Ex: 2500" />
-            </div>
-          </div>
-          <button type="submit">Ajouter le produit</button>
-        </form>
-      </section>
-
-      <section class="card hidden" aria-hidden="true">
-        <h2>Resume de commande</h2>
-        <p>Relisez, modifiez ou supprimez chaque produit avant envoi.</p>
-        <div class="summary-metrics">
-          <span id="summary-lines">0 ligne</span>
-          <span id="summary-qty">0 article</span>
-        </div>
-        <div class="table-wrap">
-          <table class="summary-table">
-            <thead>
-              <tr>
-                <th>Produit</th>
-                <th>Quantite</th>
-                <th>Unite</th>
-                <th>Marque</th>
-                <th>Montant (FCFA)</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="needs-list"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card hidden">
-        <h2>Upload de photo + OCR</h2>
-        <p>Importez la liste ecrite sur papier puis extraire le texte automatiquement.</p>
-        <div class="upload-layout">
-          <div class="stack">
-            <label class="upload">
-              <input id="photo-input" type="file" accept="image/*" multiple />
-              <span>Choisir des photos</span>
-            </label>
-            <button id="ocr-button" type="button">Lire le texte de la photo</button>
-            <p id="ocr-status" class="muted">OCR pret.</p>
-          </div>
-          <div id="photo-preview" class="photo-preview"></div>
-        </div>
-      </section>
-
-      <section id="commande" class="card">
-        <h2>Envoyer la commande</h2>
-        <p>Confirmez vos informations, le creneau de livraison et le paiement.</p>
-
-        <form id="order-form" class="stack">
-          <div class="inline-fields">
-            <div class="field">
-              <label for="customer-name">Nom complet</label>
-              <input
-                id="customer-name"
-                type="text"
-                placeholder="Ex: Abdoulaye Ndiaye"
-                required
-              />
-            </div>
-            <div class="field">
-              <label for="customer-phone">Telephone</label>
-              <input
-                id="customer-phone"
-                type="text"
-                placeholder="Ex: +221 77 000 00 00"
-                required
-              />
-            </div>
-            <div class="field">
-              <label for="customer-address">Adresse de livraison</label>
-              <input
-                id="customer-address"
-                type="text"
-                placeholder="Ex: Parcelles Assainies Unite 15"
-                required
-              />
-            </div>
-            <div class="field">
-              <label for="delivery-slot">Creneau de livraison</label>
-              <select id="delivery-slot">
-                <option value="maintenant">Le plus tot possible</option>
-                <option value="matin">Ce matin</option>
-                <option value="apres-midi">Cet apres-midi</option>
-                <option value="soir">Ce soir</option>
-              </select>
-            </div>
-            <div class="field payment-field-full">
-              <div class="payment-field-label" id="payment-method-heading">
-                Comment souhaitez-vous payer ?
-              </div>
-
-              <div
-                id="payment-choices-primary"
-                class="payment-choices payment-choices--primary"
-                role="radiogroup"
-                aria-labelledby="payment-method-heading"
-              >
-                <label class="payment-choice payment-choice--paydunya hidden">
-                  <input type="radio" name="payment-choice" value="paydunya" />
-                  <span class="payment-choice__badge" aria-hidden="true">Sécurisé</span>
-                  <span class="payment-choice__title">Payer en ligne maintenant</span>
-                  <span class="payment-choice__desc">
-                    Paydunya — Wave, Orange Money, carte bancaire
-                  </span>
-                </label>
-                <label class="payment-choice">
-                  <input
-                    type="radio"
-                    name="payment-choice"
-                    value="a_la_livraison"
-                    checked
-                  />
-                  <span class="payment-choice__title">Payer à la livraison</span>
-                  <span class="payment-choice__desc">Espèces ou mobile money avec le livreur</span>
-                </label>
-              </div>
-
-              <p class="payment-choices-sep muted">Ou indiquez un opérateur classique</p>
-              <div
-                class="payment-choices payment-choices--chips"
-                role="group"
-                aria-label="Mobile money classique"
-              >
-                <label class="payment-chip">
-                  <input type="radio" name="payment-choice" value="wave" />
-                  <span>Wave</span>
-                </label>
-                <label class="payment-chip">
-                  <input type="radio" name="payment-choice" value="orange_money" />
-                  <span>Orange Money</span>
-                </label>
-                <label class="payment-chip">
-                  <input type="radio" name="payment-choice" value="free_money" />
-                  <span>Free Money</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <p id="paydunya-pay-tip" class="muted hidden">
-            Pour Paydunya, indiquez le <strong>prix unitaire</strong> (FCFA) de chaque produit dans
-            le tableau du dessus pour calculer la facture. Le flux redirige vers la page officielle
-            Paydunya. Voir <a href="PAYDUNYA.md">PAYDUNYA.md</a> pour deployer Supabase Functions.
+          <p class="home-head__note">
+            Aucun compte requis pour votre première commande. On vous rappelle sur WhatsApp pour confirmer.
           </p>
+        </div>
+        <div class="home-steps">
+          <article class="home-step">
+            <span class="home-step__num">i.</span>
+            <h3>Écrivez votre liste</h3>
+            <p>
+              Tapez ce dont vous avez besoin, article par article. Ajoutez la quantité et une note si un produit peut être remplacé. (Vous pouvez aussi dicter — nouvelle fonctionnalité.)
+            </p>
+          </article>
+          <article class="home-step">
+            <span class="home-step__num">ii.</span>
+            <h3>On confirme sur WhatsApp</h3>
+            <p>
+              Un shopper vérifie votre liste, propose des marques et confirme le prix total avant de partir au marché.
+            </p>
+          </article>
+          <article class="home-step">
+            <span class="home-step__num">iii.</span>
+            <h3>Livraison, payez à la porte</h3>
+            <p>
+              Espèces, Wave, Orange Money ou Free Money — au moment de la livraison, jamais avant.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
 
-          <div id="my-referral-banner" class="referral-banner hidden" aria-live="polite"></div>
-
-          <div class="field">
-            <label for="referral-code">Code parrain (optionnel)</label>
-            <input
-              id="referral-code"
-              type="text"
-              placeholder="Ex: FN1234ABC"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <p id="referral-code-hint" class="muted referral-code-hint hidden"></p>
+    <section class="home-section home-section--warm" id="categories">
+      <div class="home-wrap">
+        <div class="home-head">
+          <div>
+            <p class="home-eyebrow">Ce qu'on va chercher</p>
+            <h2>Tout ce qu'on trouve <em>au marché.</em></h2>
           </div>
+          <p class="home-head__note">
+            Prix indicatifs du marché central de Thiès, mis à jour chaque semaine.
+          </p>
+        </div>
+        <div class="home-cats">
+          <a class="home-cat" href="products.html">
+            <h3>Poisson & fruits de mer</h3>
+            <p>Yaboy, thiof, capitaine, crevettes, calamars — pêche du jour.</p>
+            <div class="home-cat__meta">
+              <span>dès 1 500 FCFA / kg</span>
+              <span class="home-cat__arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+          <a class="home-cat" href="products.html">
+            <h3>Légumes & fruits</h3>
+            <p>Tomate, oignon, carotte, chou, mangue, papaye, orange.</p>
+            <div class="home-cat__meta">
+              <span>dès 300 FCFA / botte</span>
+              <span class="home-cat__arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+          <a class="home-cat" href="products.html">
+            <h3>Viande & volaille</h3>
+            <p>Bœuf, mouton, chèvre, poulet, dinde — coupe sur demande.</p>
+            <div class="home-cat__meta">
+              <span>dès 3 800 FCFA / kg</span>
+              <span class="home-cat__arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+          <a class="home-cat" href="products.html">
+            <h3>Épicerie de base</h3>
+            <p>Riz, huile, sucre, mil, farine, tomate concentrée, Maggi.</p>
+            <div class="home-cat__meta">
+              <span>dès 500 FCFA / unité</span>
+              <span class="home-cat__arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+          <a class="home-cat" href="products.html">
+            <h3>Entretien maison</h3>
+            <p>Madar, eau de Javel, éponges, sacs, savon Marseille.</p>
+            <div class="home-cat__meta">
+              <span>dès 350 FCFA / unité</span>
+              <span class="home-cat__arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+          <a class="home-cat" href="products.html">
+            <h3>Bébé & hygiène</h3>
+            <p>Couches, lingettes, lait infantile, produits pharmacie de base.</p>
+            <div class="home-cat__meta">
+              <span>dès 2 000 FCFA / paquet</span>
+              <span class="home-cat__arrow" aria-hidden="true">→</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
 
-          <div id="checkout-pricing" class="checkout-pricing hidden" aria-live="polite">
-            <div class="checkout-pricing__row">
-              <span>Sous-total produits</span>
-              <strong id="pricing-subtotal">—</strong>
-            </div>
-            <div class="checkout-pricing__row">
-              <span>Livraison</span>
-              <strong id="pricing-delivery">—</strong>
-            </div>
-            <div id="pricing-discount-row" class="checkout-pricing__row checkout-pricing__row--discount hidden">
-              <span>Réduction livraison (parrainage)</span>
-              <strong id="pricing-discount">—</strong>
-            </div>
-            <div class="checkout-pricing__row checkout-pricing__row--total">
-              <span>Total estimé</span>
-              <strong id="pricing-total">—</strong>
-            </div>
-            <p id="pricing-referral-note" class="muted checkout-pricing__note hidden"></p>
+    <section class="home-section home-section--ivory" id="temoignages">
+      <div class="home-wrap">
+        <div class="home-head">
+          <div>
+            <p class="home-eyebrow">Ils nous font confiance</p>
+            <h2>Des clients <em>à Thiès,</em> comme vous.</h2>
           </div>
+          <p class="home-head__note">
+            Chaque livraison est faite par un shopper identifié — nom, photo et numéro partagés avant l'arrivée.
+          </p>
+        </div>
+        <div class="home-quotes">
+          <article class="home-quote">
+            <span class="home-quote__mark" aria-hidden="true">«</span>
+            <p>Ma mère ne sait pas lire les applications, mais elle sait parler. Elle dicte sa liste et tout arrive. Vraiment un service pour tout le monde.</p>
+            <div class="home-quote__who">
+              <span class="home-quote__avatar home-quote__avatar--green">A</span>
+              <span>
+                <span class="home-quote__name">Awa Diop</span>
+                <span class="home-quote__place">Médina Fall, Thiès</span>
+              </span>
+            </div>
+          </article>
+          <article class="home-quote">
+            <span class="home-quote__mark" aria-hidden="true">«</span>
+            <p>Je travaille jusqu'à 19h. Avant, je courais au marché le samedi. Maintenant j'écris ma liste le vendredi soir et je reçois tout le samedi matin.</p>
+            <div class="home-quote__who">
+              <span class="home-quote__avatar home-quote__avatar--deep">M</span>
+              <span>
+                <span class="home-quote__name">Moussa Sarr</span>
+                <span class="home-quote__place">Grand Standing, Thiès</span>
+              </span>
+            </div>
+          </article>
+          <article class="home-quote">
+            <span class="home-quote__mark" aria-hidden="true">«</span>
+            <p>Payer à la livraison, c'est ce qui m'a convaincue. J'ai vérifié les produits avant de payer. Tout était frais, exactement comme au marché.</p>
+            <div class="home-quote__who">
+              <span class="home-quote__avatar home-quote__avatar--gold">F</span>
+              <span>
+                <span class="home-quote__name">Fatou Ndiaye</span>
+                <span class="home-quote__place">Cité Malick Sy, Thiès</span>
+              </span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
 
-          <label for="customer-note">Note complementaire (optionnel)</label>
+    <section class="home-section home-section--dark" id="parrainage-intro">
+      <div class="home-wrap">
+        <div class="home-head">
+          <div>
+            <p class="home-eyebrow">Parrainage</p>
+            <h2>Partagez, <em>gagnez.</em></h2>
+          </div>
+          <p class="home-head__note">
+            Votre crédit est déduit automatiquement à votre prochaine commande payée.
+          </p>
+        </div>
+        <div class="home-flow">
+          <div class="home-flow__step">
+            <span class="home-flow__amount">1</span>
+            <span class="home-flow__label">Partagez votre code sur WhatsApp</span>
+          </div>
+          <span class="home-flow__arrow" aria-hidden="true">→</span>
+          <div class="home-flow__step">
+            <span class="home-flow__amount">5 500</span>
+            <span class="home-flow__label">FCFA de courses par votre filleul</span>
+          </div>
+          <span class="home-flow__arrow" aria-hidden="true">→</span>
+          <div class="home-flow__step">
+            <span class="home-flow__amount">+300</span>
+            <span class="home-flow__label">FCFA pour vous ET pour votre filleul</span>
+          </div>
+        </div>
+        <div class="home-referral-cta">
+          <a
+            class="home-btn home-btn--wa"
+            id="home-share-code"
+            href="https://wa.me/?text=Salut%20!%20J'utilise%20ShopSenegal%20pour%20mes%20courses%20%C3%A0%20Thi%C3%A8s.%20Voici%20mon%20code%20%3A%20"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            Partager mon code sur WhatsApp
+          </a>
+          <a class="home-btn home-btn--ghost-light" href="parrainage.html">Voir mon solde</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-order" id="commande-wrap">
+      <div class="container">
+        <div class="home-head">
+          <div>
+            <p class="home-eyebrow">Commander</p>
+            <h2>Écrivez votre liste, <em>on s'occupe du reste.</em></h2>
+          </div>
+          <p class="home-head__note">
+            Un article par ligne. Vous pouvez aussi dicter, puis confirmer vos coordonnées ci-dessous.
+          </p>
+        </div>
+      </div>
+
+      <section
+        id="order-list-panel"
+        class="container card order-list-panel"
+      >
+        <h2>Créez votre liste</h2>
+        <p>Entrez votre liste de commandes ou dictez-la, puis validez votre commande ci-dessous.</p>
+        <div class="voice-box">
+          <div class="voice-actions">
+            <button id="voice-button" type="button">Dicter une commande</button>
+          </div>
+          <label for="voice-transcript">Entrez votre liste de commandes ici ou dictez la liste de votre commande</label>
           <textarea
-            id="customer-note"
-            rows="2"
-            placeholder="Ex: Remplacer un produit si indisponible"
+            id="voice-transcript"
+            rows="6"
+            placeholder="Exemple: riz 2 kg, tomates 3 boites, lait 1 litre..."
           ></textarea>
-          <button id="send-order-button" type="submit">Valider ma commande</button>
-          <p id="pay-submit-hint" class="muted pay-submit-hint hidden" aria-live="polite"></p>
-        </form>
-
-        <p id="order-status" class="muted">Votre commande sera enregistrée puis confirmée sur WhatsApp.</p>
-        <div id="order-actions" class="order-actions hidden">
-          <a id="whatsapp-link" class="btn-link" target="_blank" rel="noreferrer">Confirmer via WhatsApp</a>
-          <a id="sms-link" class="btn-link btn-link--ghost" href="#">Confirmer via SMS</a>
+          <p id="voice-status" class="muted">Cliquez sur « Dicter une commande » ou saisissez votre liste directement.</p>
         </div>
       </section>
 
-      <section id="parrainage" class="card">
-        <h2>Mon compte parrainage</h2>
-        <p>Suivez votre solde et partagez votre code avec vos proches.</p>
-        <div id="referral-account-panel" class="referral-account-panel" aria-live="polite"></div>
-      </section>
+      <div class="container stack-lg">
+        <section class="hidden" aria-hidden="true">
+          <form id="need-form" class="stack">
+            <div class="inline-fields">
+              <div class="field">
+                <label for="need-name">Nom du produit</label>
+                <input id="need-name" type="text" placeholder="Ex: riz" />
+              </div>
+              <div class="field">
+                <label for="need-quantity">Quantite</label>
+                <input id="need-quantity" type="number" min="1" step="1" value="1" />
+              </div>
+              <div class="field">
+                <label for="need-unit">Unite</label>
+                <select id="need-unit">
+                  <option value="piece">piece</option>
+                  <option value="kg">kg</option>
+                  <option value="litre">litre</option>
+                  <option value="paquet">paquet</option>
+                  <option value="boite">boite</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="need-brand">Marque (optionnel)</label>
+                <input id="need-brand" type="text" placeholder="Ex: Royal Umbrella" />
+              </div>
+              <div class="field">
+                <label for="need-amount">Montant (optionnel)</label>
+                <input id="need-amount" type="number" min="0" step="0.01" placeholder="Ex: 2500" />
+              </div>
+            </div>
+            <button type="submit">Ajouter le produit</button>
+          </form>
+        </section>
 
-      <section class="card">
-        <h2>Historique client</h2>
-        <p>Vos commandes sont liées à votre numéro de téléphone (compte ou dernière commande).</p>
-        <div id="order-history" class="history-list"></div>
-      </section>
+        <section class="card hidden" aria-hidden="true">
+          <h2>Resume de commande</h2>
+          <p>Relisez, modifiez ou supprimez chaque produit avant envoi.</p>
+          <div class="summary-metrics">
+            <span id="summary-lines">0 ligne</span>
+            <span id="summary-qty">0 article</span>
+          </div>
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Quantite</th>
+                  <th>Unite</th>
+                  <th>Marque</th>
+                  <th>Montant (FCFA)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="needs-list"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card hidden">
+          <h2>Upload de photo + OCR</h2>
+          <p>Importez la liste ecrite sur papier puis extraire le texte automatiquement.</p>
+          <div class="upload-layout">
+            <div class="stack">
+              <label class="upload">
+                <input id="photo-input" type="file" accept="image/*" multiple />
+                <span>Choisir des photos</span>
+              </label>
+              <button id="ocr-button" type="button">Lire le texte de la photo</button>
+              <p id="ocr-status" class="muted">OCR pret.</p>
+            </div>
+            <div id="photo-preview" class="photo-preview"></div>
+          </div>
+        </section>
+
+        <section id="commande" class="card">
+          <h2>Envoyer la commande</h2>
+          <p>Confirmez vos informations, le creneau de livraison et le paiement.</p>
+
+          <form id="order-form" class="stack">
+            <div class="inline-fields">
+              <div class="field">
+                <label for="customer-name">Nom complet</label>
+                <input
+                  id="customer-name"
+                  type="text"
+                  placeholder="Ex: Abdoulaye Ndiaye"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="customer-phone">Telephone</label>
+                <input
+                  id="customer-phone"
+                  type="text"
+                  placeholder="Ex: +221 77 000 00 00"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="customer-address">Adresse de livraison</label>
+                <input
+                  id="customer-address"
+                  type="text"
+                  placeholder="Ex: Parcelles Assainies Unite 15"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="delivery-slot">Creneau de livraison</label>
+                <select id="delivery-slot">
+                  <option value="maintenant">Le plus tot possible</option>
+                  <option value="matin">Ce matin</option>
+                  <option value="apres-midi">Cet apres-midi</option>
+                  <option value="soir">Ce soir</option>
+                </select>
+              </div>
+              <div class="field payment-field-full">
+                <div class="payment-field-label" id="payment-method-heading">
+                  Comment souhaitez-vous payer ?
+                </div>
+
+                <div
+                  id="payment-choices-primary"
+                  class="payment-choices payment-choices--primary"
+                  role="radiogroup"
+                  aria-labelledby="payment-method-heading"
+                >
+                  <label class="payment-choice payment-choice--paydunya hidden">
+                    <input type="radio" name="payment-choice" value="paydunya" />
+                    <span class="payment-choice__badge" aria-hidden="true">Sécurisé</span>
+                    <span class="payment-choice__title">Payer en ligne maintenant</span>
+                    <span class="payment-choice__desc">
+                      Paydunya — Wave, Orange Money, carte bancaire
+                    </span>
+                  </label>
+                  <label class="payment-choice">
+                    <input
+                      type="radio"
+                      name="payment-choice"
+                      value="a_la_livraison"
+                      checked
+                    />
+                    <span class="payment-choice__title">Payer à la livraison</span>
+                    <span class="payment-choice__desc">Espèces ou mobile money avec le livreur</span>
+                  </label>
+                </div>
+
+                <p class="payment-choices-sep muted">Ou indiquez un opérateur classique</p>
+                <div
+                  class="payment-choices payment-choices--chips"
+                  role="group"
+                  aria-label="Mobile money classique"
+                >
+                  <label class="payment-chip">
+                    <input type="radio" name="payment-choice" value="wave" />
+                    <span>Wave</span>
+                  </label>
+                  <label class="payment-chip">
+                    <input type="radio" name="payment-choice" value="orange_money" />
+                    <span>Orange Money</span>
+                  </label>
+                  <label class="payment-chip">
+                    <input type="radio" name="payment-choice" value="free_money" />
+                    <span>Free Money</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <p id="paydunya-pay-tip" class="muted hidden">
+              Pour Paydunya, indiquez le <strong>prix unitaire</strong> (FCFA) de chaque produit dans
+              le tableau du dessus pour calculer la facture. Le flux redirige vers la page officielle
+              Paydunya. Voir <a href="PAYDUNYA.md">PAYDUNYA.md</a> pour deployer Supabase Functions.
+            </p>
+
+            <div id="my-referral-banner" class="referral-banner hidden" aria-live="polite"></div>
+
+            <div class="field">
+              <label for="referral-code">Code parrain (optionnel)</label>
+              <input
+                id="referral-code"
+                type="text"
+                placeholder="Ex: FN1234ABC"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <p id="referral-code-hint" class="muted referral-code-hint hidden"></p>
+            </div>
+
+            <div id="checkout-pricing" class="checkout-pricing hidden" aria-live="polite">
+              <div class="checkout-pricing__row">
+                <span>Sous-total produits</span>
+                <strong id="pricing-subtotal">—</strong>
+              </div>
+              <div class="checkout-pricing__row">
+                <span>Livraison</span>
+                <strong id="pricing-delivery">—</strong>
+              </div>
+              <div id="pricing-discount-row" class="checkout-pricing__row checkout-pricing__row--discount hidden">
+                <span>Réduction livraison (parrainage)</span>
+                <strong id="pricing-discount">—</strong>
+              </div>
+              <div class="checkout-pricing__row checkout-pricing__row--total">
+                <span>Total estimé</span>
+                <strong id="pricing-total">—</strong>
+              </div>
+              <p id="pricing-referral-note" class="muted checkout-pricing__note hidden"></p>
+            </div>
+
+            <label for="customer-note">Note complementaire (optionnel)</label>
+            <textarea
+              id="customer-note"
+              rows="2"
+              placeholder="Ex: Remplacer un produit si indisponible"
+            ></textarea>
+            <button id="send-order-button" type="submit">Valider ma commande</button>
+            <p id="pay-submit-hint" class="muted pay-submit-hint hidden" aria-live="polite"></p>
+          </form>
+
+          <p id="order-status" class="muted">Votre commande sera enregistrée puis confirmée sur WhatsApp.</p>
+          <div id="order-actions" class="order-actions hidden">
+            <a id="whatsapp-link" class="btn-link" target="_blank" rel="noreferrer">Confirmer via WhatsApp</a>
+            <a id="sms-link" class="btn-link btn-link--ghost" href="#">Confirmer via SMS</a>
+          </div>
+        </section>
+
+        <section id="parrainage" class="card">
+          <h2>Mon compte parrainage</h2>
+          <p>Suivez votre solde et partagez votre code avec vos proches.</p>
+          <div id="referral-account-panel" class="referral-account-panel" aria-live="polite"></div>
+        </section>
+
+        <section class="card">
+          <h2>Historique client</h2>
+          <p>Vos commandes sont liées à votre numéro de téléphone (compte ou dernière commande).</p>
+          <div id="order-history" class="history-list"></div>
+        </section>
+      </div>
+    </section>
     </main>
 
-    <footer class="footer footer--rich">
-      <div class="container footer-grid">
+    <footer class="home-footer">
+      <div class="home-wrap home-footer__grid">
         <div>
-          <strong>ShopSenegal</strong>
-          <p>On fait les courses comme vous et pour vous.</p>
+          <div class="home-footer__brand">Shop<span>Senegal</span></div>
+          <p class="home-footer__tagline">On fait les courses comme vous, pour vous — à Thiès depuis 2025.</p>
+          <a class="home-btn home-btn--wa" data-contact-whatsapp href="https://wa.me/221766226601" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            WhatsApp officiel
+          </a>
         </div>
-        <div>
-          <strong>Contact officiel</strong>
-          <p>Téléphone : <a data-contact-tel data-contact-display href="tel:+221766226601">+221 76 622 66 01</a><br />WhatsApp : <a data-contact-whatsapp data-contact-display href="https://api.whatsapp.com/send?phone=221766226601" target="_blank" rel="noopener noreferrer">+221 76 622 66 01</a></p>
-          <p>Disponibilité : 7j/7 — 8h à 22h (heure de Dakar)</p>
+        <div class="home-footer__col">
+          <h4>Contact</h4>
+          <a data-contact-tel data-contact-display href="tel:+221766226601">+221 76 622 66 01</a>
+          <p>7j/7 · 8h → 22h (Dakar)</p>
+          <p>Thiès, Sénégal</p>
         </div>
-        <div>
-          <strong>Informations légales</strong>
-          <nav class="footer-legal-links" aria-label="Informations légales">
-            <a href="mentions-legales.html">Mentions légales</a>
-            <a href="cgu.html">Conditions générales d'utilisation</a>
-            <a href="politique-confidentialite.html">Politique de confidentialité</a>
-          </nav>
+        <div class="home-footer__col">
+          <h4>Informations</h4>
+          <a href="mentions-legales.html">Mentions légales</a>
+          <a href="cgu.html">Conditions d'utilisation</a>
+          <a href="politique-confidentialite.html">Politique de confidentialité</a>
+          <a href="https://wa.me/221766226601?text=Bonjour%2C%20je%20souhaite%20devenir%20shopper%20ShopSenegal." target="_blank" rel="noopener noreferrer">Devenir shopper</a>
         </div>
       </div>
-      <div class="container footer-powered">
-        <p>
-          ShopSenegal est un produit powered by <strong>SpparoW</strong>, enregistré au Sénégal —
-          RCCM&nbsp;: SNTHS2025A2144 · NINEA&nbsp;: 012124195
-        </p>
+      <div class="home-wrap home-footer__legal">
+        <p>© 2026 ShopSenegal — powered by SpparoW, Sénégal.</p>
+        <p>RCCM : SNTHS2025A2144 · NINEA : 012124195</p>
       </div>
     </footer>
+
+    <a
+      class="home-fab"
+      data-contact-whatsapp
+      href="https://wa.me/221766226601"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="WhatsApp officiel ShopSenegal"
+    >
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+    </a>
 
     <script src="nav.js?v=20260523i"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -461,7 +680,7 @@
     <script src="referral-account.js?v=20260724c"></script>
     <script src="ui-feedback.js?v=20260523i"></script>
     <script src="customer-review.js?v=20260706a"></script>
-    <script src="script.js?v=20260725a"></script>
-
+    <script src="script.js?v=20260824a"></script>
+    <script src="home.js?v=20260824a"></script>
   </body>
 </html>

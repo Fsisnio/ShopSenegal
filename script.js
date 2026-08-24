@@ -469,12 +469,18 @@ function ensureCartFromList() {
   return false;
 }
 
-function openOrderListPanel() {
+function openOrderListPanel(options = {}) {
   if (!orderListPanel) return;
   orderListPanel.classList.remove("hidden");
   orderListPanel.removeAttribute("aria-hidden");
   orderListPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-  setTimeout(() => voiceTranscript?.focus(), 350);
+  setTimeout(() => {
+    if (options.startVoice) {
+      voiceButton?.click();
+    } else {
+      voiceTranscript?.focus();
+    }
+  }, 350);
 }
 
 function scrollToCommandeSection() {
@@ -773,7 +779,15 @@ if (voiceApplyButton) {
   });
 }
 
-stepCreateList?.addEventListener("click", openOrderListPanel);
+function bindListCta(el, startVoice) {
+  el?.addEventListener("click", (event) => {
+    if (el.tagName === "A") event.preventDefault();
+    openOrderListPanel({ startVoice });
+  });
+}
+
+bindListCta(stepCreateList, false);
+bindListCta(document.getElementById("cta-dictate"), true);
 stepVerifyOrder?.addEventListener("click", scrollToCommandeSection);
 
 if (orderForm) {
@@ -785,7 +799,7 @@ if (orderForm) {
       notifyOrder(
         "warn",
         "Liste vide",
-        "Cliquez sur « Créez votre liste », saisissez ou dictez vos produits, puis validez votre commande."
+        "Cliquez sur « Écrire ma liste », saisissez ou dictez vos produits, puis validez votre commande."
       );
       openOrderListPanel();
       return;
@@ -1020,8 +1034,10 @@ orderHistory.addEventListener("click", async (event) => {
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (!SpeechRecognition) {
-  voiceButton.disabled = true;
-  voiceStatus.textContent = "La commande vocale n'est pas supportee sur ce navigateur.";
+  if (voiceButton) voiceButton.disabled = true;
+  if (voiceStatus) {
+    voiceStatus.textContent = "La commande vocale n'est pas supportee sur ce navigateur.";
+  }
 } else {
   const recognition = new SpeechRecognition();
   recognition.lang = "fr-FR";
@@ -1063,6 +1079,11 @@ async function initHomePage() {
   await renderHistory();
   await initReferralBanner();
   await window.ShopReferralAccount?.renderInto(document.getElementById("referral-account-panel"));
+
+  const hash = window.location.hash;
+  if (hash === "#order-list-panel" || hash === "#commande") {
+    openOrderListPanel({ startVoice: false });
+  }
 }
 
 if (referralCodeInput) {
