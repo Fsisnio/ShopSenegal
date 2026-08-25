@@ -999,6 +999,74 @@ const ShopData = (() => {
     return { ok: true, source: "local" };
   }
 
+  function normalizeEmail(value) {
+    return String(value ?? "")
+      .trim()
+      .toLowerCase();
+  }
+
+  function namesMatch(a, b) {
+    const n = (value) =>
+      String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+    const left = n(a);
+    const right = n(b);
+    return Boolean(left) && left === right;
+  }
+
+  async function preparePasswordReset(phone) {
+    const normalizedPhone = normalizePhone(phone);
+    if (!normalizedPhone) return { ok: false, reason: "invalid_input" };
+    const user = await getUserByPhone(normalizedPhone);
+    if (!user) return { ok: false, reason: "not_found" };
+    return {
+      ok: true,
+      hasEmail: Boolean(normalizeEmail(user.email))
+    };
+  }
+
+  async function resetPassword({ phone, email, fullName, newPassword }) {
+    const normalizedPhone = normalizePhone(phone);
+    const pwd = String(newPassword ?? "");
+    if (!normalizedPhone || pwd.length < 6) {
+      return { ok: false, reason: "invalid_input" };
+    }
+
+    const user = await getUserByPhone(normalizedPhone);
+    if (!user) return { ok: false, reason: "not_found" };
+
+    const hasEmail = Boolean(normalizeEmail(user.email));
+    if (hasEmail) {
+      if (normalizeEmail(user.email) !== normalizeEmail(email)) {
+        return { ok: false, reason: "identity_mismatch" };
+      }
+    } else if (!namesMatch(user.fullName, fullName)) {
+      return { ok: false, reason: "identity_mismatch" };
+    }
+
+    const client = getSupabaseClient();
+    if (client) {
+      const { error } = await client.from("users").update({ password: pwd }).eq("id", user.id);
+      if (error) {
+        console.warn("resetPassword:", error.message);
+        return { ok: false, reason: "db_error" };
+      }
+    }
+
+    const users = read(storageKeys.users, []);
+    const idx = users.findIndex(
+      (entry) => entry.id === user.id || phonesMatch(entry.phone, normalizedPhone)
+    );
+    if (idx >= 0) {
+      users[idx] = { ...users[idx], password: pwd };
+      write(storageKeys.users, users);
+    }
+
+    return { ok: true };
+  }
+
   async function saveCustomerReview(review) {
     const client = getSupabaseClient();
     if (!client) return { ok: true, source: "local" };
@@ -1038,6 +1106,8 @@ const ShopData = (() => {
     getProducts,
     registerUser,
     loginUser,
+    preparePasswordReset,
+    resetPassword,
     validateReferralCode,
     getUserByPhone,
     grantReferralRewards,

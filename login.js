@@ -108,7 +108,7 @@ loginForm?.addEventListener("submit", async (event) => {
       notify(
         "warn",
         "Mot de passe incorrect",
-        "Le mot de passe ne correspond pas. Réessayez ou contactez le support."
+        "Le mot de passe ne correspond pas. Réessayez ou utilisez Mot de passe oublié."
       );
     } else {
       notify(
