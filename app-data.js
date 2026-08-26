@@ -1010,17 +1010,6 @@ const ShopData = (() => {
       .toLowerCase();
   }
 
-  function namesMatch(a, b) {
-    const n = (value) =>
-      String(value ?? "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, " ");
-    const left = n(a);
-    const right = n(b);
-    return Boolean(left) && left === right;
-  }
-
   async function preparePasswordReset(phone) {
     const normalizedPhone = normalizePhone(phone);
     if (!normalizedPhone) return { ok: false, reason: "invalid_input" };
@@ -1086,7 +1075,7 @@ const ShopData = (() => {
     write(storageKeys.users, users);
   }
 
-  async function resetPassword({ phone, email, fullName, newPassword }) {
+  async function resetPassword({ phone, email, newPassword }) {
     const normalizedPhone = normalizePhone(phone);
     const pwd = String(newPassword ?? "");
     if (!normalizedPhone || pwd.length < 6) {
@@ -1096,12 +1085,9 @@ const ShopData = (() => {
     const user = await getUserByPhone(normalizedPhone);
     if (!user) return { ok: false, reason: "not_found" };
 
-    const hasEmail = Boolean(normalizeEmail(user.email));
-    if (hasEmail) {
-      if (normalizeEmail(user.email) !== normalizeEmail(email)) {
-        return { ok: false, reason: "identity_mismatch" };
-      }
-    } else if (!namesMatch(user.fullName, fullName)) {
+    const providedEmail = normalizeEmail(email);
+    const accountEmail = normalizeEmail(user.email);
+    if (providedEmail && accountEmail && providedEmail !== accountEmail) {
       return { ok: false, reason: "identity_mismatch" };
     }
 

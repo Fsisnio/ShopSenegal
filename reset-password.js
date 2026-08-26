@@ -1,18 +1,9 @@
-const lookupForm = document.getElementById("reset-lookup-form");
 const resetForm = document.getElementById("reset-form");
 const resetStatus = document.getElementById("reset-status");
 const phoneInput = document.getElementById("phone");
 const emailInput = document.getElementById("email");
-const nameInput = document.getElementById("full-name");
 const passwordInput = document.getElementById("password");
 const confirmPasswordInput = document.getElementById("confirm-password");
-const emailField = document.getElementById("email-field");
-const nameField = document.getElementById("name-field");
-const identityHint = document.getElementById("reset-identity-hint");
-const backButton = document.getElementById("reset-back");
-
-let pendingPhone = "";
-let pendingHasEmail = false;
 
 function isPublicProduction() {
   return Boolean(window.ShopSite?.isPublicProduction?.());
@@ -27,9 +18,9 @@ function publicResetFeedback(type, title) {
   }
   if (type === "warn") {
     const hints = {
-      "Formulaire incomplet": "Remplissez tous les champs demandés.",
+      "Formulaire incomplet": "Indiquez votre numéro de téléphone et le nouveau mot de passe.",
       "Compte introuvable": "Aucun compte avec ce numéro. Vérifiez le numéro ou créez un compte.",
-      "Identité non reconnue": "Les informations ne correspondent pas à ce compte.",
+      "Identité non reconnue": "L'email ne correspond pas à ce compte.",
       "Mot de passe trop court": "Le mot de passe doit contenir au moins 6 caractères.",
       "Mots de passe différents": "Les deux mots de passe saisis ne correspondent pas."
     };
@@ -66,77 +57,17 @@ function notify(type, title, message) {
   else window.ShopFeedback.warn(display.title, display.message);
 }
 
-function showLookup() {
-  pendingPhone = "";
-  pendingHasEmail = false;
-  lookupForm?.removeAttribute("hidden");
-  resetForm?.setAttribute("hidden", "");
-  emailField?.setAttribute("hidden", "");
-  nameField?.setAttribute("hidden", "");
-  emailInput?.removeAttribute("required");
-  nameInput?.removeAttribute("required");
-  resetForm?.reset();
-  phoneInput?.focus();
-}
-
-function showResetStep(hasEmail) {
-  pendingHasEmail = Boolean(hasEmail);
-  lookupForm?.setAttribute("hidden", "");
-  resetForm?.removeAttribute("hidden");
-
-  if (pendingHasEmail) {
-    emailField?.removeAttribute("hidden");
-    nameField?.setAttribute("hidden", "");
-    emailInput?.setAttribute("required", "");
-    nameInput?.removeAttribute("required");
-    if (identityHint) {
-      identityHint.textContent =
-        "Ce compte a un email. Saisissez-le pour confirmer votre identité, puis choisissez un nouveau mot de passe.";
-    }
-    emailInput?.focus();
-  } else {
-    emailField?.setAttribute("hidden", "");
-    nameField?.removeAttribute("hidden");
-    emailInput?.removeAttribute("required");
-    nameInput?.setAttribute("required", "");
-    if (identityHint) {
-      identityHint.textContent =
-        "Saisissez le nom complet utilisé à l'inscription, puis choisissez un nouveau mot de passe.";
-    }
-    nameInput?.focus();
-  }
-}
-
-lookupForm?.addEventListener("submit", async (event) => {
+resetForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const phone = phoneInput?.value?.trim() || "";
+  const email = emailInput?.value?.trim() || "";
+  const password = passwordInput?.value || "";
+  const confirmPassword = confirmPasswordInput?.value || "";
+
   if (!phone) {
     notify("warn", "Formulaire incomplet", "Indiquez votre numéro de téléphone.");
     return;
   }
-
-  const result = await window.ShopData.preparePasswordReset(phone);
-  if (!result?.ok) {
-    if (result?.reason === "not_found") {
-      notify(
-        "warn",
-        "Compte introuvable",
-        "Aucun compte avec ce numéro. Vérifiez le numéro ou créez un compte."
-      );
-    } else {
-      notify("error", "Recherche impossible", "Réessayez dans quelques instants.");
-    }
-    return;
-  }
-
-  pendingPhone = phone;
-  showResetStep(result.hasEmail);
-});
-
-resetForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const password = passwordInput?.value || "";
-  const confirmPassword = confirmPasswordInput?.value || "";
 
   if (password.length < 6) {
     notify(
@@ -156,22 +87,23 @@ resetForm?.addEventListener("submit", async (event) => {
   }
 
   const result = await window.ShopData.resetPassword({
-    phone: pendingPhone,
-    email: emailInput?.value || "",
-    fullName: nameInput?.value || "",
+    phone,
+    email,
     newPassword: password
   });
 
   if (!result?.ok) {
     if (result?.reason === "not_found") {
-      notify("warn", "Compte introuvable", "Aucun compte avec ce numéro.");
+      notify(
+        "warn",
+        "Compte introuvable",
+        "Aucun compte avec ce numéro. Vérifiez le numéro ou créez un compte."
+      );
     } else if (result?.reason === "identity_mismatch") {
       notify(
         "warn",
         "Identité non reconnue",
-        pendingHasEmail
-          ? "L'email ne correspond pas à ce compte."
-          : "Le nom ne correspond pas à ce compte."
+        "L'email ne correspond pas à ce compte. Laissez-le vide ou saisissez l'email de l'inscription."
       );
     } else {
       notify("error", "Mise à jour échouée", "Impossible d'enregistrer le mot de passe pour le moment.");
@@ -184,5 +116,3 @@ resetForm?.addEventListener("submit", async (event) => {
     window.location.assign("login.html");
   }, 1100);
 });
-
-backButton?.addEventListener("click", showLookup);
