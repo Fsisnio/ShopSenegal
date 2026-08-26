@@ -160,6 +160,40 @@ function getNeeds() {
   return needs.map((need) => ({ ...need }));
 }
 
+function paymentLabel(mode) {
+  const labels = {
+    a_la_livraison: "Paiement à la livraison (espèces ou Mobile Money)",
+    paydunya: "Paiement en ligne (Paydunya)",
+    wave: "Wave",
+    orange_money: "Orange Money",
+    free_money: "Free Money"
+  };
+  return labels[mode] || mode;
+}
+
+function slotLabel(value) {
+  const map = {
+    maintenant: "Le plus tôt possible",
+    matin: "Ce matin",
+    "apres-midi": "Cet après-midi",
+    soir: "Ce soir"
+  };
+  return map[value] || value || "À confirmer";
+}
+
+function captureListText() {
+  const fromBox = voiceTranscript?.value?.trim() || "";
+  if (fromBox) return fromBox;
+  return getNeeds()
+    .map((item) => {
+      const qty = item.quantity ? `${item.quantity} ` : "";
+      const unit = item.unit && item.unit !== "piece" ? `${item.unit} ` : "";
+      const brand = item.brand ? ` (${item.brand})` : "";
+      return `- ${qty}${unit}${item.name}${brand}`.trim();
+    })
+    .join("\n");
+}
+
 function cartTotalFcfa(lines) {
   return lines.reduce((sum, item) => {
     const qty = Number(item.quantity);
@@ -495,7 +529,7 @@ function redirectToWhatsApp(message) {
   const waUrl =
     window.ShopContact?.whatsappUrl?.(message) ||
     `https://api.whatsapp.com/send?phone=221766226601&text=${encodeURIComponent(message)}`;
-  window.location.assign(waUrl);
+  window.location.href = waUrl;
 }
 
 function addNeed({ name, quantity, unit = "piece", brand = "", amount = "" }) {
@@ -580,12 +614,17 @@ function renderPhotoPreview() {
 }
 
 function buildOrderMessage(orderPayload) {
-  const lines = orderPayload.besoins.map(
-    (item) =>
-      `- ${item.name} (${item.quantity} ${item.unit})${item.brand ? ` marque ${item.brand}` : ""}${
-        Number.isFinite(item.amount) ? ` - ${item.amount.toFixed(2)} FCFA` : ""
-      }`
-  );
+  const listBlock =
+    (orderPayload.listText && String(orderPayload.listText).trim()) ||
+    (orderPayload.besoins || [])
+      .map(
+        (item) =>
+          `- ${item.name} (${item.quantity} ${item.unit})${item.brand ? ` marque ${item.brand}` : ""}${
+            Number.isFinite(item.amount) ? ` - ${item.amount.toFixed(2)} FCFA` : ""
+          }`
+      )
+      .join("\n");
+
   const subtotal =
     typeof orderPayload.estimatedTotalFcfa === "number" &&
     Number.isFinite(orderPayload.estimatedTotalFcfa)
@@ -602,38 +641,53 @@ function buildOrderMessage(orderPayload) {
 
   const totalLines = [];
   if (subtotal > 0) {
-    totalLines.push(`Sous-total produits: ${subtotal} FCFA`);
+    totalLines.push(`Sous-total produits : ${subtotal} FCFA`);
   }
   if (pricing && pricing.deliveryFeeFcfa > 0) {
-    totalLines.push(`Livraison: ${pricing.deliveryFeeFcfa} FCFA`);
+    totalLines.push(`Livraison : ${pricing.deliveryFeeFcfa} FCFA`);
   }
   if (pricing && pricing.deliveryDiscountFcfa > 0) {
-    totalLines.push(`Reduction livraison (parrainage): -${pricing.deliveryDiscountFcfa} FCFA`);
+    totalLines.push(`Réduction livraison (parrainage) : -${pricing.deliveryDiscountFcfa} FCFA`);
   }
   if (pricing && pricing.grandTotalFcfa > 0) {
-    totalLines.push(`Total estime (produits + livraison): ${pricing.grandTotalFcfa} FCFA`);
+    totalLines.push(`Total estimé : ${pricing.grandTotalFcfa} FCFA`);
   } else if (subtotal > 0) {
-    totalLines.push(`Estimation totale liste (FCFA, hors livraison): ${subtotal}`);
-  }
-  if (orderPayload.referralCodeUsed) {
-    totalLines.push(`Code parrain: ${orderPayload.referralCodeUsed}`);
+    totalLines.push(`Estimation liste (hors livraison) : ${subtotal} FCFA`);
   }
 
-  const baseLines = [
-    `Commande ShopSenegal`,
-    `Reference: ${orderPayload.id}`,
-    `Client: ${orderPayload.client}`,
-    `Telephone: ${orderPayload.telephone}`,
-    `Adresse: ${orderPayload.adresse}`,
-    `Creneau: ${orderPayload.creneau}`,
-    `Paiement: ${orderPayload.paiement}`,
-    ...totalLines,
-    `Produits:`,
-    ...lines,
-    `Note: ${orderPayload.note || "Aucune"}`
+  const lines = [
+    "Bonjour ShopSenegal,",
+    "",
+    "Je valide ma commande (paiement à la livraison).",
+    "",
+    `Référence : ${orderPayload.id}`,
+    `Téléphone : ${orderPayload.telephone}`,
+    `Client : ${orderPayload.client || orderPayload.telephone}`,
+    `Adresse : ${orderPayload.adresse || "À confirmer sur WhatsApp"}`,
+    `Créneau : ${slotLabel(orderPayload.creneau)}`,
+    `Paiement : ${paymentLabel(orderPayload.paiement)}`
   ];
 
-  return baseLines.join("\n");
+  if (orderPayload.referralCodeUsed) {
+    lines.push(`Code parrain : ${orderPayload.referralCodeUsed}`);
+  }
+
+  lines.push("", "Ma liste :", listBlock || "- (liste à confirmer)");
+
+  if (totalLines.length) {
+    lines.push("", ...totalLines);
+  }
+
+  if (orderPayload.photos) {
+    lines.push("", `Photos jointes dans le formulaire : ${orderPayload.photos}`);
+  }
+
+  if (orderPayload.note) {
+    lines.push("", `Note : ${orderPayload.note}`);
+  }
+
+  lines.push("", "Merci !");
+  return lines.join("\n");
 }
 
 async function renderHistory() {
@@ -798,6 +852,8 @@ if (orderForm) {
     event.preventDefault();
     orderActions.classList.add("hidden");
 
+    const listText = captureListText();
+
     if (!ensureCartFromList()) {
       notifyOrder(
         "warn",
@@ -824,16 +880,7 @@ if (orderForm) {
 
     const referralRaw = referralCodeInput?.value?.trim() || "";
     if (referralRaw) {
-      const validation = await validateReferralCodeInput();
-      if (!validation.valid) {
-        notifyOrder(
-          "warn",
-          "Code parrain invalide",
-          "Corrigez ou effacez le code parrain avant d'envoyer la commande."
-        );
-        orderActions.classList.add("hidden");
-        return;
-      }
+      await validateReferralCodeInput();
     }
 
     const pricing =
@@ -908,6 +955,7 @@ if (orderForm) {
         status: "Nouvelle",
         paymentStatus: payMethod === "paydunya" ? "En attente" : "Non paye",
         estimatedTotalFcfa: estimatedTotalFcfa > 0 ? estimatedTotalFcfa : null,
+        listText: listText || captureListText(),
         referralCodeUsed: referralValidation.valid ? referralValidation.code : null,
         deliveryFeeFcfa: pricing?.deliveryFeeFcfa ?? null,
         deliveryDiscountFcfa: pricing?.deliveryDiscountFcfa ?? 0,
@@ -995,24 +1043,6 @@ if (orderForm) {
       smsLink.href = window.ShopContact?.smsUrl?.(message) ||
         `sms:+221766226601?body=${encoded}`;
 
-      if (persisted.source === "supabase") {
-        notifyOrder("success", "Commande envoyée", "Redirection vers WhatsApp…", {
-          clientName: orderPayload.client
-        });
-      } else if (persisted.source === "local_fallback") {
-        notifyOrder("warn", "Commande enregistrée", persisted.error || "Redirection vers WhatsApp…", {
-          clientName: orderPayload.client
-        });
-      } else {
-        notifyOrder("warn", "Commande enregistrée", "Redirection vers WhatsApp…", {
-          clientName: orderPayload.client
-        });
-      }
-
-      window.ShopReview?.promptAfterPurchase?.({ orderId: orderPayload.id });
-
-      await renderHistory();
-      resetFormAfterOrder();
       redirectToWhatsApp(message);
       return;
     } finally {
