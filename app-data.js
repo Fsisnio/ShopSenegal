@@ -586,19 +586,37 @@ const ShopData = (() => {
     };
   }
 
+  function findLocalUserByPhone(phone) {
+    return read(storageKeys.users, []).find((user) => phonesMatch(user.phone, phone)) || null;
+  }
+
+  function toLoginPayload(user) {
+    return {
+      userId: user.id,
+      fullName: user.fullName,
+      phone: user.phone,
+      address: user.address,
+      referralCode: user.referralCode || ""
+    };
+  }
+
   async function getUserByPhone(phone) {
     const client = getSupabaseClient();
-    if (client) {
-      const tail = phoneQueryTail(phone);
-      let query = client.from("users").select("*");
-      if (tail.length >= 7) query = query.ilike("phone", `%${tail}`);
-      const { data, error } = await query;
-      if (!error && Array.isArray(data)) {
+    const tail = phoneQueryTail(phone);
+    if (client && tail.length >= 7) {
+      const { data, error } = await client
+        .from("users")
+        .select("*")
+        .ilike("phone", `%${tail}`)
+        .limit(25);
+      if (error) {
+        console.warn("getUserByPhone:", error.message);
+      } else if (Array.isArray(data)) {
         const match = data.map(fromUserDb).find((user) => phonesMatch(user.phone, phone));
         if (match) return match;
       }
     }
-    return read(storageKeys.users, []).find((user) => phonesMatch(user.phone, phone)) || null;
+    return findLocalUserByPhone(phone);
   }
 
   async function grantReferralRewards(orderId) {
@@ -709,47 +727,34 @@ const ShopData = (() => {
   }
 
   async function loginUser(phone, password) {
-    const normalizedPhone = normalizePhone(phone);
-    const pwd = String(password ?? "");
-    if (!normalizedPhone || !pwd) {
-      return { ok: false, reason: "invalid_input" };
-    }
+    try {
+      const normalizedPhone = normalizePhone(phone);
+      const pwd = String(password ?? "");
+      if (!normalizedPhone || !pwd) {
+        return { ok: false, reason: "invalid_input" };
+      }
 
-    const client = getSupabaseClient();
-    if (client) {
       const user = await getUserByPhone(normalizedPhone);
-      if (!user) return { ok: false, reason: "not_found" };
-      if (String(user.password ?? "") !== pwd) {
-        return { ok: false, reason: "wrong_password" };
+      if (user && String(user.password ?? "") === pwd) {
+        return { ok: true, user: toLoginPayload(user) };
       }
-      return {
-        ok: true,
-        user: {
-          userId: user.id,
-          fullName: user.fullName,
-          phone: user.phone,
-          address: user.address,
-          referralCode: user.referralCode || ""
-        }
-      };
-    }
 
-    const users = read(storageKeys.users, []);
-    const user = users.find((entry) => phonesMatch(entry.phone, normalizedPhone));
-    if (!user) return { ok: false, reason: "not_found" };
-    if (String(user.password ?? "") !== pwd) {
-      return { ok: false, reason: "wrong_password" };
-    }
-    return {
-      ok: true,
-      user: {
-        userId: user.id,
-        fullName: user.fullName,
-        phone: user.phone,
-        address: user.address,
-        referralCode: user.referralCode || ""
+      const localUser = findLocalUserByPhone(normalizedPhone);
+      if (localUser && String(localUser.password ?? "") === pwd) {
+        try {
+          await persistPasswordInSupabase(user || localUser, pwd, normalizedPhone);
+        } catch (syncErr) {
+          console.warn("loginUser password sync:", syncErr);
+        }
+        return { ok: true, user: toLoginPayload(localUser) };
       }
-    };
+
+      if (!user && !localUser) return { ok: false, reason: "not_found" };
+      return { ok: false, reason: "wrong_password" };
+    } catch (err) {
+      console.warn("loginUser:", err);
+      return { ok: false, reason: "db_error" };
+    }
   }
 
   async function registerUser(user) {
@@ -1027,6 +1032,60 @@ const ShopData = (() => {
     };
   }
 
+  async function persistPasswordInSupabase(user, pwd, normalizedPhone) {
+    const client = getSupabaseClient();
+    if (!client) return { ok: true, source: "local" };
+
+    try {
+      async function applyUpdate(buildQuery) {
+        const { data, error } = await buildQuery(client.from("users").update({ password: pwd }))
+          .select("id")
+          .limit(5);
+        if (error) return { ok: false, error };
+        const rows = Array.isArray(data) ? data : [];
+        return { ok: rows.length > 0, error: null };
+      }
+
+      let result = user?.id
+        ? await applyUpdate((query) => query.eq("id", String(user.id)))
+        : { ok: false, error: null };
+
+      if (!result.ok && !result.error) {
+        const tail = phoneQueryTail(normalizedPhone || user?.phone);
+        if (tail.length >= 7) {
+          result = await applyUpdate((query) => query.ilike("phone", `%${tail}`));
+        }
+      }
+
+      if (result.error) {
+        console.warn("resetPassword:", result.error.message);
+        return { ok: false, reason: "db_error" };
+      }
+      if (!result.ok) {
+        console.warn("resetPassword: no row updated");
+        return { ok: false, reason: "db_error" };
+      }
+      return { ok: true, source: "supabase" };
+    } catch (err) {
+      console.warn("resetPassword:", err);
+      return { ok: false, reason: "db_error" };
+    }
+  }
+
+  function writeLocalPassword(user, pwd, normalizedPhone) {
+    const users = read(storageKeys.users, []);
+    const idx = users.findIndex(
+      (entry) => entry.id === user.id || phonesMatch(entry.phone, normalizedPhone)
+    );
+    if (idx >= 0) {
+      users[idx] = { ...users[idx], password: pwd };
+      write(storageKeys.users, users);
+      return;
+    }
+    users.unshift({ ...user, password: pwd });
+    write(storageKeys.users, users);
+  }
+
   async function resetPassword({ phone, email, fullName, newPassword }) {
     const normalizedPhone = normalizePhone(phone);
     const pwd = String(newPassword ?? "");
@@ -1046,24 +1105,10 @@ const ShopData = (() => {
       return { ok: false, reason: "identity_mismatch" };
     }
 
-    const client = getSupabaseClient();
-    if (client) {
-      const { error } = await client.from("users").update({ password: pwd }).eq("id", user.id);
-      if (error) {
-        console.warn("resetPassword:", error.message);
-        return { ok: false, reason: "db_error" };
-      }
-    }
+    const persisted = await persistPasswordInSupabase(user, pwd, normalizedPhone);
+    if (!persisted.ok) return persisted;
 
-    const users = read(storageKeys.users, []);
-    const idx = users.findIndex(
-      (entry) => entry.id === user.id || phonesMatch(entry.phone, normalizedPhone)
-    );
-    if (idx >= 0) {
-      users[idx] = { ...users[idx], password: pwd };
-      write(storageKeys.users, users);
-    }
-
+    writeLocalPassword(user, pwd, normalizedPhone);
     return { ok: true };
   }
 

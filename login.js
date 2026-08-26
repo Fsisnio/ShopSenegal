@@ -96,19 +96,37 @@ loginForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  const result = await window.ShopData.loginUser(phone, password);
-  if (!result.ok) {
-    if (result.reason === "not_found") {
+  let result;
+  try {
+    result = await window.ShopData.loginUser(phone, password);
+  } catch (err) {
+    console.warn("login:", err);
+    notify(
+      "error",
+      "Connexion échouée",
+      "Impossible de vous connecter pour le moment. Réessayez dans quelques instants."
+    );
+    return;
+  }
+
+  if (!result?.ok) {
+    if (result?.reason === "not_found") {
       notify(
         "warn",
         "Compte introuvable",
         "Aucun compte avec ce numéro. Créez un compte ou vérifiez le numéro saisi."
       );
-    } else if (result.reason === "wrong_password") {
+    } else if (result?.reason === "wrong_password") {
       notify(
         "warn",
         "Mot de passe incorrect",
         "Le mot de passe ne correspond pas. Réessayez ou utilisez Mot de passe oublié."
+      );
+    } else if (result?.reason === "invalid_input") {
+      notify(
+        "warn",
+        "Formulaire incomplet",
+        "Indiquez un numéro de téléphone valide et votre mot de passe."
       );
     } else {
       notify(
